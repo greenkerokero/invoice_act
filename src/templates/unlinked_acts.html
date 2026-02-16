@@ -260,8 +260,6 @@
             const dateFrom = document.getElementById('filterDateFrom').value;
             const dateTo = document.getElementById('filterDateTo').value;
             
-            console.log('Filter:', {contractorId, responsible, dateFrom, dateTo});
-            
             let url = '/acts/unlinked?';
             if (contractorId) url += 'contractor_id=' + contractorId + '&';
             if (responsible) url += 'responsible_manager=' + encodeURIComponent(responsible) + '&';
@@ -269,12 +267,9 @@
             if (dateTo) url += 'date_to=' + dateTo + '&';
             url += 'sort_by=' + currentSort.field + '&sort_dir=' + currentSort.direction;
             
-            console.log('URL:', url);
-            
             fetch(url)
                 .then(r => r.json())
                 .then(acts => {
-                    console.log('Loaded:', acts.length, 'acts');
                     allActs = acts;
                     currentPage = 1;
                     renderCurrentPage();
