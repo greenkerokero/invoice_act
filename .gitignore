@@ -62,6 +62,4 @@ temp_*
 *.tmp
 
 # Project specific
-errors.txt
-"Переписка с opencode.txt"
-"Промпт для замены table на div.md"
+ignore_me/
