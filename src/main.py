@@ -511,11 +511,7 @@ async def import_sbis(file: UploadFile = File(...)):
                     "reasons": [],
                 }
 
-                is_dokotgr_ish_with_empty_doc = (
-                    package_type == "ДокОтгрИсх" and not doc_type
-                )
-
-                if doc_type == "ЭДОСч" and not is_dokotgr_ish_with_empty_doc:
+                if doc_type == "ЭДОСч" and package_type != "ДокОтгрИсх":
                     row_info["import_status"] = "Пропущен"
                     row_info["reasons"].append(f"Тип документа: {doc_type}")
                     skipped_type += 1
