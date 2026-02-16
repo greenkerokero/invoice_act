@@ -29,9 +29,9 @@ echo    CLEAR STOP WORDS TABLE?
 echo ========================================
 echo.
 echo Press Y to clear stop words table,
-echo or press N to keep stop words.
+echo or press Enter to keep stop words.
 echo.
-set /p clear_stop_words="Clear stop words? (Y/N): "
+set /p clear_stop_words="Clear stop words table? (Y/Enter): "
 
 set clear_stop_words=%clear_stop_words:~0,1%
 if /i "%clear_stop_words%"=="Y" (
@@ -48,9 +48,9 @@ echo    CLEAR EMPLOYEES TABLE?
 echo ========================================
 echo.
 echo Press Y to clear employees table,
-echo or press N to keep employees.
+echo or press Enter to keep employees.
 echo.
-set /p clear_employees="Clear employees? (Y/N): "
+set /p clear_employees="Clear employees table? (Y/Enter): "
 
 set clear_employees=%clear_employees:~0,1%
 if /i "%clear_employees%"=="Y" (
@@ -79,6 +79,23 @@ if %errorlevel% neq 0 (
 echo Backup created: backups\db_backup_%datetime%.db
 echo.
 
+echo ========================================
+echo    WARNING: DATABASE WILL BE DELETED NOW!
+echo    ALL DATA WILL BE LOST!
+echo ========================================
+echo.
+echo Press Y to proceed with deletion,
+echo or press N to cancel.
+echo.
+set /p delete_confirm="Proceed with deletion? (Y/N): "
+
+if /i not "%delete_confirm%"=="Y" (
+    echo Operation cancelled.
+    pause
+    exit /b 0
+)
+
+echo.
 echo Deleting database...
 del "database.db"
 
