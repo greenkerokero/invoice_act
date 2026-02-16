@@ -275,50 +275,7 @@
                     renderCurrentPage();
                 });
         }
-                });
-            
-            if (!document.getElementById('debugOutput')) {
-                document.body.appendChild(debugDiv);
-            }
-            
-            loadUnlinkedActs();
-        }
         
-        function loadUnlinkedActs() {
-            const contractorId = document.getElementById('filterContractor').value;
-            const responsible = document.getElementById('filterResponsible').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo = document.getElementById('filterDateTo').value;
-            
-            console.log('Filter values:', {contractorId, responsible, dateFrom, dateTo});
-            
-            let url = '/acts/unlinked?';
-            if (contractorId) url += 'contractor_id=' + contractorId + '&';
-            if (responsible) url += 'responsible_manager=' + encodeURIComponent(responsible) + '&';
-            if (dateFrom) url += 'date_from=' + dateFrom + '&';
-            if (dateTo) url += 'date_to=' + dateTo + '&';
-            url += 'sort_by=' + currentSort.field + '&sort_dir=' + currentSort.direction;
-            url += '&_=' + new Date().getTime(); // cache busting
-            
-            console.log('Loading unlinked acts, URL:', url);
-            
-            fetch(url)
-                .then(r => {
-                    console.log('Response status:', r.status);
-                    return r.json();
-                })
-                .then(acts => {
-                    console.log('Loaded acts count:', acts.length);
-                    allActs = acts;
-                    currentPage = 1;
-                    renderCurrentPage();
-                })
-                .catch(err => {
-                    console.error('Error loading acts:', err);
-                    alert('Ошибка загрузки данных: ' + err);
-                });
-        }
-
         function renderCurrentPage() {
             let paginated;
             if (pageSize === 0) {
