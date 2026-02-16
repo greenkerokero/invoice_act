@@ -71,16 +71,22 @@ def normalize_contractor_name(name: str) -> str:
     if not name:
         return name
     name = name.strip()
-    name = name.upper()
 
     name = re.sub(r'["""\'\",;]', " ", name)
     name = re.sub(r"\s+", " ", name)
 
     name = re.sub(r"\s*\([^)]*\)\s*", " ", name)
 
+    name = name.lower()
+
     legal_forms = ["ООО", "ИП", "АО", "ЗАО", "ОАО", "ПАО", "НКО", "АНО", "ФГУП", "МУП"]
-    pattern = r"(" + "|".join(re.escape(form) for form in legal_forms) + r")(?:\s|$)"
-    match = re.search(pattern, name)
+    for form in legal_forms:
+        name = re.sub(r"\b" + form.lower() + r"\b", form, name, flags=re.IGNORECASE)
+
+    legal_forms_pattern = (
+        r"(" + "|".join(re.escape(form) for form in legal_forms) + r")(?:\s|$)"
+    )
+    match = re.search(legal_forms_pattern, name)
     if match:
         legal_form = match.group(1)
         name = name.replace(legal_form, "").strip() + " " + legal_form

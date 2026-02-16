@@ -228,6 +228,27 @@
                 
                 <div id="detailResults1C" style="display: none; margin-top: 15px; position: relative;">
                     <h6>Детализация импорта из 1С</h6>
+                    <div class="filter-bar mb-2" id="filterBar1C">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-sm" id="filterContractor1C" placeholder="Контрагент" oninput="applyFilters1C()">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select form-select-sm" id="filterStatus1C" onchange="applyFilters1C()">
+                                    <option value="">Все статусы</option>
+                                    <option value="Импортирован">Импортирован</option>
+                                    <option value="Пропущен">Пропущен</option>
+                                    <option value="Ошибка">Ошибка</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-sm" id="filterReasons1C" placeholder="Причины" oninput="applyFilters1C()">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-secondary" onclick="clearFilters1C()">Очистить</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="detail-wrapper">
                         <div class="data-table" id="detailTable1C" style="--cols: 40px 80px 80px 80px 1fr 120px 100px 1fr;">
                             <div class="data-header">
@@ -248,6 +269,30 @@
                 
                 <div id="detailResultsSbis" style="display: none; margin-top: 15px; position: relative;">
                     <h6>Детализация импорта из СБИС</h6>
+                    <div class="filter-bar mb-2" id="filterBarSbis">
+                        <div class="row g-2">
+                            <div class="col-md-2">
+                                <input type="text" class="form-control form-control-sm" id="filterContractorSbis" placeholder="Контрагент" oninput="applyFiltersSbis()">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" class="form-control form-control-sm" id="filterDocTypeSbis" placeholder="Тип документа" oninput="applyFiltersSbis()">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select form-select-sm" id="filterResultSbis" onchange="applyFiltersSbis()">
+                                    <option value="">Все результаты</option>
+                                    <option value="Импортирован">Импортирован</option>
+                                    <option value="Пропущен">Пропущен</option>
+                                    <option value="Ошибка">Ошибка</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-sm" id="filterReasonsSbis" placeholder="Причины" oninput="applyFiltersSbis()">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-secondary" onclick="clearFiltersSbis()">Очистить</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="detail-wrapper">
                         <div class="data-table" id="detailTableSbis" style="--cols: 40px 80px 80px 80px 1fr 100px 80px 80px 100px 1fr;">
                             <div class="data-header">
@@ -297,16 +342,87 @@
         
         let detailData1C = [];
         let detailDataSbis = [];
+        let filteredData1C = [];
+        let filteredDataSbis = [];
         let pageSize = 12;
         let currentPage1C = 1;
         let currentPageSbis = 1;
         
-        function renderPagination1C() {
-            renderPagination('1C', detailData1C, currentPage1C, 'detailBody1C', 'paginationBar1C');
+        function applyFilters1C() {
+            const contractorFilter = document.getElementById('filterContractor1C').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus1C').value;
+            const reasonsFilter = document.getElementById('filterReasons1C').value.toLowerCase();
+            
+            filteredData1C = detailData1C.filter(row => {
+                const contractorMatch = !contractorFilter || (row.contractor || '').toLowerCase().includes(contractorFilter);
+                const statusMatch = !statusFilter || row.status === statusFilter;
+                const reasonsMatch = !reasonsFilter || (row.reasons || []).some(r => r.toLowerCase().includes(reasonsFilter));
+                return contractorMatch && statusMatch && reasonsMatch;
+            });
+            
+            currentPage1C = 1;
+            renderFiltered1C();
         }
         
-        function renderPaginationSbis() {
-            renderPagination('Sbis', detailDataSbis, currentPageSbis, 'detailBodySbis', 'paginationBarSbis');
+        function clearFilters1C() {
+            document.getElementById('filterContractor1C').value = '';
+            document.getElementById('filterStatus1C').value = '';
+            document.getElementById('filterReasons1C').value = '';
+            filteredData1C = [...detailData1C];
+            currentPage1C = 1;
+            renderFiltered1C();
+        }
+        
+        function renderFiltered1C() {
+            let paginated;
+            if (pageSize === 0) {
+                paginated = filteredData1C;
+            } else {
+                const start = (currentPage1C - 1) * pageSize;
+                paginated = filteredData1C.slice(start, start + pageSize);
+            }
+            renderTable1C(paginated);
+            renderPagination('1C', filteredData1C, currentPage1C, 'detailBody1C', 'paginationBar1C');
+        }
+        
+        function applyFiltersSbis() {
+            const contractorFilter = document.getElementById('filterContractorSbis').value.toLowerCase();
+            const docTypeFilter = document.getElementById('filterDocTypeSbis').value.toLowerCase();
+            const resultFilter = document.getElementById('filterResultSbis').value;
+            const reasonsFilter = document.getElementById('filterReasonsSbis').value.toLowerCase();
+            
+            filteredDataSbis = detailDataSbis.filter(row => {
+                const contractorMatch = !contractorFilter || (row.contractor || '').toLowerCase().includes(contractorFilter);
+                const docTypeMatch = !docTypeFilter || (row.doc_type || '').toLowerCase().includes(docTypeFilter);
+                const resultMatch = !resultFilter || row.import_status === resultFilter;
+                const reasonsMatch = !reasonsFilter || (row.reasons || []).some(r => r.toLowerCase().includes(reasonsFilter));
+                return contractorMatch && docTypeMatch && resultMatch && reasonsMatch;
+            });
+            
+            currentPageSbis = 1;
+            renderFilteredSbis();
+        }
+        
+        function clearFiltersSbis() {
+            document.getElementById('filterContractorSbis').value = '';
+            document.getElementById('filterDocTypeSbis').value = '';
+            document.getElementById('filterResultSbis').value = '';
+            document.getElementById('filterReasonsSbis').value = '';
+            filteredDataSbis = [...detailDataSbis];
+            currentPageSbis = 1;
+            renderFilteredSbis();
+        }
+        
+        function renderFilteredSbis() {
+            let paginated;
+            if (pageSize === 0) {
+                paginated = filteredDataSbis;
+            } else {
+                const start = (currentPageSbis - 1) * pageSize;
+                paginated = filteredDataSbis.slice(start, start + pageSize);
+            }
+            renderTableSbis(paginated);
+            renderPagination('Sbis', filteredDataSbis, currentPageSbis, 'detailBodySbis', 'paginationBarSbis');
         }
         
         function renderPagination(type, allData, currentPage, bodyId, barId) {
@@ -361,10 +477,10 @@
             pageSize = size;
             if (type === '1C') {
                 currentPage1C = 1;
-                renderCurrentPage1C();
+                renderFiltered1C();
             } else {
                 currentPageSbis = 1;
-                renderCurrentPageSbis();
+                renderFilteredSbis();
             }
         }
         
@@ -374,10 +490,10 @@
                 pageSize = val;
                 if (type === '1C') {
                     currentPage1C = 1;
-                    renderCurrentPage1C();
+                    renderFiltered1C();
                 } else {
                     currentPageSbis = 1;
-                    renderCurrentPageSbis();
+                    renderFilteredSbis();
                 }
             }
         }
@@ -387,49 +503,26 @@
             pageSize = 0;
             if (type === '1C') {
                 currentPage1C = 1;
-                renderCurrentPage1C();
+                renderFiltered1C();
             } else {
                 currentPageSbis = 1;
-                renderCurrentPageSbis();
+                renderFilteredSbis();
             }
         }
         
         function goToPage(type, page) {
-            const totalPages = pageSize === 0 ? 1 : Math.ceil((type === '1C' ? detailData1C : detailDataSbis).length / pageSize);
+            const data = type === '1C' ? filteredData1C : filteredDataSbis;
+            const totalPages = pageSize === 0 ? 1 : Math.ceil(data.length / pageSize);
             if (page < 1 || page > totalPages) return;
             if (type === '1C') {
                 currentPage1C = page;
-                renderCurrentPage1C();
+                renderFiltered1C();
             } else {
                 currentPageSbis = page;
-                renderCurrentPageSbis();
+                renderFilteredSbis();
             }
         }
-        
-        function renderCurrentPage1C() {
-            let paginated;
-            if (pageSize === 0) {
-                paginated = detailData1C;
-            } else {
-                const start = (currentPage1C - 1) * pageSize;
-                paginated = detailData1C.slice(start, start + pageSize);
-            }
-            renderTable1C(paginated);
-            renderPagination1C();
-        }
-        
-        function renderCurrentPageSbis() {
-            let paginated;
-            if (pageSize === 0) {
-                paginated = detailDataSbis;
-            } else {
-                const start = (currentPageSbis - 1) * pageSize;
-                paginated = detailDataSbis.slice(start, start + pageSize);
-            }
-            renderTableSbis(paginated);
-            renderPaginationSbis();
-        }
-
+ 
         document.getElementById('import1CForm').onsubmit = async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -470,8 +563,9 @@
         
         function renderDetailTable1C(rows) {
             detailData1C = rows;
+            filteredData1C = [...rows];
             currentPage1C = 1;
-            renderCurrentPage1C();
+            renderFiltered1C();
         }
         
         function renderTable1C(rows) {
@@ -540,8 +634,9 @@
         
         function renderDetailTableSbis(rows) {
             detailDataSbis = rows;
+            filteredDataSbis = [...rows];
             currentPageSbis = 1;
-            renderCurrentPageSbis();
+            renderFilteredSbis();
         }
         
         function renderTableSbis(rows) {
