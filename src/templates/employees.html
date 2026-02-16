@@ -131,7 +131,6 @@
                                 <textarea class="form-control" id="bulkEmployees" rows="6" placeholder="Сергей Иванов&#10;Семен Петров&#10;Анна Сидорова"></textarea>
                             </div>
                             <button type="button" class="btn btn-success w-100" onclick="addBulkEmployees()">Добавить сотрудников</button>
-                            <div id="bulkResult" class="mt-2"></div>
                         </div>
                     </div>
                 </div>
@@ -270,12 +269,16 @@
                 .then(res => res.json())
                 .then(result => {
                     if (result.success) {
-function addBulkEmployees() {
+                        loadEmployees();
+                    } else {
+                        alert('Ошибка: ' + (result.error || 'Unknown error'));
+                    }
+                });
+        }
+        
+        function addBulkEmployees() {
             const text = document.getElementById('bulkEmployees').value.trim();
-            if (!text) {
-                alert('Введите список сотрудников');
-                return;
-            }
+            if (!text) return;
             
             const nameOrder = document.querySelector('input[name="nameOrder"]:checked').value;
             const lines = text.split('\n').filter(line => line.trim());
@@ -292,10 +295,7 @@ function addBulkEmployees() {
                 }
             }
             
-            if (employees.length === 0) {
-                alert('Не удалось распознать сотрудников. Проверьте формат ввода.');
-                return;
-            }
+            if (employees.length === 0) return;
             
             fetch('/employees/bulk-add', {
                 method: 'POST',
@@ -304,19 +304,15 @@ function addBulkEmployees() {
             })
             .then(res => res.json())
             .then(result => {
-                const resultDiv = document.getElementById('bulkResult');
                 if (result.success) {
-                    resultDiv.innerHTML = `<div class="alert alert-success py-1 px-2 mb-0">Добавлено: ${result.added}, Пропущено: ${result.skipped}</div>`;
                     document.getElementById('bulkEmployees').value = '';
                     loadEmployees();
-                } else {
-                    resultDiv.innerHTML = `<div class="alert alert-danger py-1 px-2 mb-0">Ошибка: ${result.error}</div>`;
                 }
             })
-            .catch(err => {
-                document.getElementById('bulkResult').innerHTML = `<div class="alert alert-danger py-1 px-2 mb-0">Ошибка: ${err}</div>`;
-            });
+            .catch(() => {});
         }
+        
+        loadEmployees();
         
         loadEmployees();
                     } else {
