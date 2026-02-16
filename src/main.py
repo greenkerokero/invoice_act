@@ -3,6 +3,8 @@ import re
 import shutil
 from datetime import datetime, date, timedelta
 from typing import Optional, List
+from functools import lru_cache
+
 from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -17,14 +19,10 @@ from workalendar.europe import Russia
 
 app = FastAPI()
 
-_app_calendar = None
 
-
-def _get_calendar():
-    global _app_calendar
-    if _app_calendar is None:
-        _app_calendar = Russia()
-    return _app_calendar
+@lru_cache(maxsize=1)
+def _get_calendar() -> Russia:
+    return Russia()
 
 
 def get_russian_holidays(year: int) -> set:
