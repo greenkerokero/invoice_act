@@ -7,9 +7,9 @@ echo ========================================
 echo    WARNING: ALL DATA WILL BE DELETED!
 echo ========================================
 echo.
-echo Press Y to continue, or press N to cancel.
+echo Press Y to continue, or press N or Enter to cancel.
 echo.
-set /p confirm="Continue? (Y/N): "
+set /p confirm="Are you sure? This is IRREVERSIBLE! (Y / N or Enter): "
 
 if /i not "%confirm%"=="Y" (
     echo Operation cancelled.
@@ -29,9 +29,9 @@ echo    CLEAR STOP WORDS TABLE?
 echo ========================================
 echo.
 echo Press Y to clear stop words table,
-echo or press Enter to keep stop words.
+echo or press N or Enter to keep stop words.
 echo.
-set /p clear_stop_words="Clear stop words table? (Y/Enter): "
+set /p clear_stop_words="Clear stop words table? (Y / N or Enter): "
 
 set clear_stop_words=%clear_stop_words:~0,1%
 if /i "%clear_stop_words%"=="Y" (
@@ -48,9 +48,9 @@ echo    CLEAR EMPLOYEES TABLE?
 echo ========================================
 echo.
 echo Press Y to clear employees table,
-echo or press Enter to keep employees.
+echo or press N or Enter to keep employees.
 echo.
-set /p clear_employees="Clear employees table? (Y/Enter): "
+set /p clear_employees="Clear employees table? (Y / N or Enter): "
 
 set clear_employees=%clear_employees:~0,1%
 if /i "%clear_employees%"=="Y" (
@@ -85,9 +85,9 @@ echo    ALL DATA WILL BE LOST!
 echo ========================================
 echo.
 echo Press Y to proceed with deletion,
-echo or press N to cancel.
+echo or press N or Enter to cancel.
 echo.
-set /p delete_confirm="Proceed with deletion? (Y/N): "
+set /p delete_confirm="Proceed with deletion? (Y / N or Enter): "
 
 if /i not "%delete_confirm%"=="Y" (
     echo Operation cancelled.
