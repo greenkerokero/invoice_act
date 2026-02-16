@@ -7,10 +7,9 @@ echo ========================================
 echo    WARNING: ALL DATA WILL BE DELETED!
 echo ========================================
 echo.
-echo Press Y to continue,
-echo or press Enter to cancel.
+echo Press Y to continue, or press N to cancel.
 echo.
-set /p confirm="Are you sure? This is IRREVERSIBLE! (Y/Enter): "
+set /p confirm="Continue? (Y/N): "
 
 if /i not "%confirm%"=="Y" (
     echo Operation cancelled.
@@ -24,6 +23,45 @@ if not exist "database.db" (
     exit /b 0
 )
 
+echo.
+echo ========================================
+echo    CLEAR STOP WORDS TABLE?
+echo ========================================
+echo.
+echo Press Y to clear stop words table,
+echo or press N to keep stop words.
+echo.
+set /p clear_stop_words="Clear stop words? (Y/N): "
+
+set clear_stop_words=%clear_stop_words:~0,1%
+if /i "%clear_stop_words%"=="Y" (
+    set keep_stop_words=False
+    echo Stop words table WILL be cleared.
+) else (
+    set keep_stop_words=True
+    echo Stop words table will be kept.
+)
+
+echo.
+echo ========================================
+echo    CLEAR EMPLOYEES TABLE?
+echo ========================================
+echo.
+echo Press Y to clear employees table,
+echo or press N to keep employees.
+echo.
+set /p clear_employees="Clear employees? (Y/N): "
+
+set clear_employees=%clear_employees:~0,1%
+if /i "%clear_employees%"=="Y" (
+    set keep_employees=False
+    echo Employees table WILL be cleared.
+) else (
+    set keep_employees=True
+    echo Employees table will be kept.
+)
+
+echo.
 echo Creating backup...
 if not exist "backups" mkdir backups
 
@@ -41,44 +79,6 @@ if %errorlevel% neq 0 (
 echo Backup created: backups\db_backup_%datetime%.db
 echo.
 
-echo ========================================
-echo    CLEAR STOP WORDS TABLE?
-echo ========================================
-echo.
-echo Press Y to clear stop words table,
-echo or press Enter to keep stop words.
-echo.
-set /p clear_stop_words="Clear stop words table? (Y/Enter): "
-
-set clear_stop_words=%clear_stop_words:~0,1%
-if /i "%clear_stop_words%"=="Y" (
-    set keep_stop_words=False
-    echo Stop words table WILL be cleared.
-) else (
-    set keep_stop_words=True
-    echo Stop words table will be kept.
-)
-
-echo.
-echo ========================================
-echo    CLEAR EMPLOYEES TABLE?
-echo ========================================
-echo.
-echo Press Y to clear employees table,
-echo or press Enter to keep employees.
-echo.
-set /p clear_employees="Clear employees table? (Y/Enter): "
-
-set clear_employees=%clear_employees:~0,1%
-if /i "%clear_employees%"=="Y" (
-    set keep_employees=False
-    echo Employees table WILL be cleared.
-) else (
-    set keep_employees=True
-    echo Employees table will be kept.
-)
-
-echo.
 echo Deleting database...
 del "database.db"
 
@@ -90,22 +90,26 @@ if %errorlevel% neq 0 (
 
 echo Database deleted. Reinitializing...
 
-if "%keep_employees%"=="True" (
-    if "%keep_stop_words%"=="True" (
-        .venv\Scripts\python.exe -c "from src.database import init_db, get_session, Employee, StopWord; init_db(); session = get_session(); session.query(Employee).delete(); session.query(StopWord).delete(); session.commit(); session.close()"
-    ) else (
-        .venv\Scripts\python.exe -c "from src.database import init_db, get_session, Employee; init_db(); session = get_session(); session.query(Employee).delete(); session.commit(); session.close()"
-    )
-) else (
-    if "%keep_stop_words%"=="True" (
-        .venv\Scripts\python.exe -c "from src.database import init_db, get_session, StopWord; init_db(); session = get_session(); session.query(StopWord).delete(); session.commit(); session.close()"
-    ) else (
-        .venv\Scripts\python.exe -c "from src.database import init_db; init_db()"
-    )
-)
+.venv\Scripts\python.exe -c "from src.database import init_db; init_db()"
 
 if %errorlevel% neq 0 (
     echo Failed to initialize database.
+    pause
+    exit /b 1
+)
+
+if "%keep_employees%"=="False" (
+    echo Clearing employees table...
+    .venv\Scripts\python.exe -c "from src.database import get_session, Employee; session = get_session(); session.query(Employee).delete(); session.commit(); session.close()"
+)
+
+if "%keep_stop_words%"=="False" (
+    echo Clearing stop words table...
+    .venv\Scripts\python.exe -c "from src.database import get_session, StopWord; session = get_session(); session.query(StopWord).delete(); session.commit(); session.close()"
+)
+
+if %errorlevel% neq 0 (
+    echo Failed to clear tables.
     pause
     exit /b 1
 )
