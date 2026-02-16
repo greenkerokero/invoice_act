@@ -60,6 +60,22 @@ if errorlevel 1 (
 )
 
 echo.
-echo Update completed
+echo ========================================
+echo Restarting application
+echo ========================================
+echo.
+
+echo Stopping uvicorn process...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8000 ^| findstr LISTENING') do (
+    taskkill /F /PID %%a 2>nul
+)
+timeout /t 2 /nobreak >nul
+
+echo Starting application...
+start "PIPISKA" cmd /c ".venv\Scripts\uvicorn.exe src.main:app --host 127.0.0.1 --port 8000"
+
+echo.
+echo Update completed and application restarted
+echo ========================================
 pause
 exit /b 0
