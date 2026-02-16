@@ -9,6 +9,8 @@ echo ========================================
 echo.
 echo Press Y to continue, or press N or Enter to cancel.
 echo.
+
+set "confirm="
 set /p confirm="Are you sure? This is IRREVERSIBLE. (Y / N or Enter): "
 
 if /i not "%confirm%"=="Y" (
@@ -31,14 +33,16 @@ echo.
 echo Press Y to clear stop words table,
 echo or press N or Enter to keep stop words.
 echo.
+
+set "clear_stop_words="
 set /p clear_stop_words="Clear stop words table? (Y / N or Enter): "
 
-set clear_stop_words=%clear_stop_words:~0,1%
-if /i "%clear_stop_words%"=="Y" (
-    set keep_stop_words=False
+set "keep_stop_words=1"
+if /i "%clear_stop_words%"=="Y" set "keep_stop_words=0"
+
+if "%keep_stop_words%"=="0" (
     echo Stop words table WILL be cleared.
 ) else (
-    set keep_stop_words=True
     echo Stop words table will be kept.
 )
 
@@ -50,14 +54,16 @@ echo.
 echo Press Y to clear employees table,
 echo or press N or Enter to keep employees.
 echo.
+
+set "clear_employees="
 set /p clear_employees="Clear employees table? (Y / N or Enter): "
 
-set clear_employees=%clear_employees:~0,1%
-if /i "%clear_employees%"=="Y" (
-    set keep_employees=False
+set "keep_employees=1"
+if /i "%clear_employees%"=="Y" set "keep_employees=0"
+
+if "%keep_employees%"=="0" (
     echo Employees table WILL be cleared.
 ) else (
-    set keep_employees=True
     echo Employees table will be kept.
 )
 
@@ -65,8 +71,8 @@ echo.
 echo Creating backup...
 if not exist "backups" mkdir backups
 
-set datetime=%date:~6,4%-%date:~3,2%-%date:~0,2%_%time:~0,2%-%time:~3,2%-%time:~6,2%
-set datetime=%datetime: =0%
+set "datetime=%date:~6,4%-%date:~3,2%-%date:~0,2%_%time:~0,2%-%time:~3,2%-%time:~6,2%"
+set "datetime=%datetime: =0%"
 
 copy "database.db" "backups\db_backup_%datetime%.db"
 
@@ -87,6 +93,8 @@ echo.
 echo Press Y to proceed with deletion,
 echo or press N or Enter to cancel.
 echo.
+
+set "delete_confirm="
 set /p delete_confirm="Proceed with deletion? (Y / N or Enter): "
 
 if /i not "%delete_confirm%"=="Y" (
@@ -115,12 +123,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-if "%keep_employees%"=="False" (
+if "%keep_employees%"=="0" (
     echo Clearing employees table...
     .venv\Scripts\python.exe -c "from src.database import get_session, Employee; session = get_session(); session.query(Employee).delete(); session.commit(); session.close()"
 )
 
-if "%keep_stop_words%"=="False" (
+if "%keep_stop_words%"=="0" (
     echo Clearing stop words table...
     .venv\Scripts\python.exe -c "from src.database import get_session, StopWord; session = get_session(); session.query(StopWord).delete(); session.commit(); session.close()"
 )
