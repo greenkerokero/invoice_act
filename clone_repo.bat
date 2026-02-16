@@ -32,7 +32,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-git checkout -t origin main
+git checkout -b main origin/main
 if errorlevel 1 (
     echo Error: failed to checkout main branch
     pause
