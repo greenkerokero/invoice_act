@@ -606,7 +606,8 @@ invoices.forEach(inv => {
         }
         
         function calculateDeadline(invoiceId, days, inputEl) {
-            if (!days || days < 0) return;
+            const daysNum = parseInt(days);
+            if (!days || isNaN(daysNum) || daysNum < 0) return;
             
             fetch('/invoice/calculate-deadline/' + invoiceId, {
                 method: 'POST',

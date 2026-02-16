@@ -324,7 +324,7 @@
                     <div class="data-cell">${act.contractor_name || ''}</div>
                     <div class="data-cell">${act.contractor_inn || ''}</div>
                     <div class="data-cell">${act.signing_date || ''}</div>
-                    <div class="data-cell"><input type="number" class="form-control form-control-sm" style="width:100%" step="0.01" value="${Number(act.amount).toFixed(2)}" id="amount-${act.id}" onchange="updateAmount(${act.id}, this.value)"></div>
+                    <div class="data-cell"><input type="number" class="form-control form-control-sm" style="width:100%" step="0.01" min="0" value="${Number(act.amount).toFixed(2)}" id="amount-${act.id}" onchange="updateAmount(${act.id}, this.value)"></div>
                     <div class="data-cell">
                         <select class="form-select form-select-sm" id="responsible-${act.id}">
                             ${employeeOptions}
@@ -404,8 +404,11 @@
         }
 
         function updateAmount(actId, value) {
-            const amount = parseFloat(value);
-            if (isNaN(amount) || amount < 0) return;
+            let amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) {
+                loadUnlinkedActs();
+                return;
+            }
             
             fetch('/act/update/' + actId, {
                 method: 'POST',
