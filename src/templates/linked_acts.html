@@ -112,7 +112,7 @@
                     <select class="form-select" id="filterContractor">
                         <option value="">Все</option>
                         {% for contractor in contractors %}
-                        <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                        <option value="{{ contractor.id }}">{{ format_contractor_name(contractor.name) }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -208,6 +208,19 @@
 
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <script>
+        const LEGAL_FORMS = ['ооо', 'ип', 'ао', 'зао', 'оао', 'пао', 'нко', 'ано', 'фгуп', 'муп'];
+        
+        function formatContractorName(name) {
+            if (!name) return '';
+            const parts = name.trim().split(/\s+/);
+            return parts.map(part => {
+                if (LEGAL_FORMS.includes(part.toLowerCase())) {
+                    return part.toUpperCase();
+                }
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }).join(' ');
+        }
+        
         let employees = [];
         let invoices = [];
         let allActs = [];
@@ -296,7 +309,7 @@
                     invoices.forEach(inv => {
                         const option = document.createElement('option');
                         option.value = inv.id;
-                        option.textContent = `${inv.number} - ${inv.contractor_name} (${inv.date})`;
+                        option.textContent = `${inv.number} - ${formatContractorName(inv.contractor_name)} (${inv.date})`;
                         select.appendChild(option);
                     });
                 });
@@ -380,7 +393,7 @@
                 row.className = 'data-row';
                 row.innerHTML = `
                     <div class="data-cell">${act.number}</div>
-                    <div class="data-cell">${act.contractor_name || ''}</div>
+                    <div class="data-cell">${formatContractorName(act.contractor_name) || ''}</div>
                     <div class="data-cell">${act.contractor_inn || ''}</div>
                     <div class="data-cell">${act.signing_date || ''}</div>
                     <div class="data-cell">${act.amount.toFixed(2)}</div>

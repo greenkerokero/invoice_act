@@ -329,6 +329,19 @@
 
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <script>
+        const LEGAL_FORMS = ['ооо', 'ип', 'ао', 'зао', 'оао', 'пао', 'нко', 'ано', 'фгуп', 'муп'];
+        
+        function formatContractorName(name) {
+            if (!name) return '';
+            const parts = name.trim().split(/\s+/);
+            return parts.map(part => {
+                if (LEGAL_FORMS.includes(part.toLowerCase())) {
+                    return part.toUpperCase();
+                }
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }).join(' ');
+        }
+        
         function addStopWord() {
             const input = document.getElementById('newStopWord');
             const word = input.value.trim();
@@ -663,7 +676,7 @@
                     <div class="data-cell">${row.number || ''}</div>
                     <div class="data-cell">${row.date || ''}</div>
                     <div class="data-cell">${row.amount || ''}</div>
-                    <div class="data-cell">${row.contractor || ''}</div>
+                    <div class="data-cell">${formatContractorName(row.contractor) || ''}</div>
                     <div class="data-cell">${row.responsible || ''}</div>
                     <div class="data-cell">${row.status}</div>
                     <div class="data-cell detail-reasons">${row.reasons ? row.reasons.join('<br>') : ''}</div>
@@ -736,7 +749,7 @@
                     <div class="data-cell">${row.number || ''}</div>
                     <div class="data-cell">${row.date || ''}</div>
                     <div class="data-cell">${row.amount || ''}</div>
-                    <div class="data-cell">${row.contractor || ''}</div>
+                    <div class="data-cell">${formatContractorName(row.contractor) || ''}</div>
                     <div class="data-cell">${row.inn || ''}</div>
                     <div class="data-cell">${row.doc_type || ''}</div>
                     <div class="data-cell">${row.status || ''}</div>

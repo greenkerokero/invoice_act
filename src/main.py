@@ -49,6 +49,30 @@ def add_business_days(start_date: date, days: int, holidays: set) -> date:
     return current
 
 
+def format_contractor_name(name: str) -> str:
+    if not name:
+        return name
+    parts = name.strip().split()
+    result_parts = []
+    for part in parts:
+        if part in [
+            "ооо",
+            "ип",
+            "ао",
+            "зао",
+            "оао",
+            "пао",
+            "нко",
+            "ано",
+            "фгуп",
+            "муп",
+        ]:
+            result_parts.append(part.upper())
+        else:
+            result_parts.append(part.capitalize())
+    return " ".join(result_parts)
+
+
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -56,6 +80,7 @@ if os.path.exists(STATIC_DIR):
 templates = Jinja2Templates(
     directory=os.path.join(os.path.dirname(__file__), "templates")
 )
+templates.env.globals["format_contractor_name"] = format_contractor_name
 
 HTML_DIR = os.path.join(os.path.dirname(__file__), "templates")
 if not os.path.exists(HTML_DIR):
@@ -79,9 +104,7 @@ def normalize_contractor_name(name: str) -> str:
 
     name = name.lower()
 
-    legal_forms = ["ООО", "ИП", "АО", "ЗАО", "ОАО", "ПАО", "НКО", "АНО", "ФГУП", "МУП"]
-    for form in legal_forms:
-        name = re.sub(r"\b" + form.lower() + r"\b", form, name, flags=re.IGNORECASE)
+    legal_forms = ["ооо", "ип", "ао", "зао", "оао", "пао", "нко", "ано", "фгуп", "муп"]
 
     legal_forms_pattern = (
         r"(" + "|".join(re.escape(form) for form in legal_forms) + r")(?:\s|$)"
@@ -94,6 +117,30 @@ def normalize_contractor_name(name: str) -> str:
         name = re.sub(r"\s+", " ", name).strip()
 
     return name.strip()
+
+
+def format_contractor_name(name: str) -> str:
+    if not name:
+        return name
+    parts = name.strip().split()
+    result_parts = []
+    for part in parts:
+        if part in [
+            "ооо",
+            "ип",
+            "ао",
+            "зао",
+            "оао",
+            "пао",
+            "нко",
+            "ано",
+            "фгуп",
+            "муп",
+        ]:
+            result_parts.append(part.upper())
+        else:
+            result_parts.append(part.capitalize())
+    return " ".join(result_parts)
 
 
 def parse_datetime(value) -> Optional[datetime]:

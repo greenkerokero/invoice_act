@@ -220,6 +220,19 @@
 
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <script>
+        const LEGAL_FORMS = ['ооо', 'ип', 'ао', 'зао', 'оао', 'пао', 'нко', 'ано', 'фгуп', 'муп'];
+        
+        function formatContractorName(name) {
+            if (!name) return '';
+            const parts = name.trim().split(/\s+/);
+            return parts.map(part => {
+                if (LEGAL_FORMS.includes(part.toLowerCase())) {
+                    return part.toUpperCase();
+                }
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }).join(' ');
+        }
+        
         let employees = [];
         let contractors = [];
         let actsVisible = {};
@@ -491,7 +504,7 @@ invoices.forEach(inv => {
                     <div class="data-cell"></div>
                     <div class="data-cell">${inv.number}</div>
                     <div class="data-cell">${inv.date}</div>
-                    <div class="data-cell" title="${inv.contractor_name || ''}">${inv.contractor_name || ''}</div>
+                    <div class="data-cell" title="${formatContractorName(inv.contractor_name) || ''}">${formatContractorName(inv.contractor_name) || ''}</div>
                     <div class="data-cell"><input type="text" class="form-control form-control-sm" style="width:100%" value="${inv.contractor_inn || ''}" onchange="updateInn(${inv.contractor_id}, this.value, this)"></div>
                     <div class="data-cell">${inv.amount.toFixed(2)}</div>
                     <div class="data-cell"><input type="date" class="form-control form-control-sm" value="${inv.payment_date || ''}" onchange="updateInvoice(${inv.id}, 'payment_date', this.value, this)"></div>
