@@ -1087,6 +1087,9 @@ def list_invoices_filtered(
             "contractor_inn": Contractor.inn,
             "responsible_import": Invoice.responsible_import,
             "motivated_person": Invoice.motivated_person,
+            "payment_date": Invoice.payment_date,
+            "acts_count": Invoice.id,
+            "free_acts_count": Invoice.id,
         }
 
         sort_column = sort_mapping.get(sort_by, Invoice.deadline)
@@ -1096,13 +1099,15 @@ def list_invoices_filtered(
 
         payment_date_nulls_last = case((Invoice.payment_date.is_(None), 1), else_=0)
 
-        if sort_dir == "desc":
+        if sort_by in ["acts_count", "free_acts_count"]:
+            invoices = query.options(joinedload(Invoice.contractor)).all()
+        elif sort_dir == "desc":
             sort_column = sort_column.desc()
             query = query.order_by(payment_date_nulls_last.asc(), sort_column)
+            invoices = query.options(joinedload(Invoice.contractor)).all()
         else:
             query = query.order_by(payment_date_nulls_last.asc(), sort_column)
-
-        invoices = query.options(joinedload(Invoice.contractor)).all()
+            invoices = query.options(joinedload(Invoice.contractor)).all()
 
         invoice_ids = [inv.id for inv in invoices]
         contractor_ids = [inv.contractor_id for inv in invoices]
@@ -1164,6 +1169,13 @@ def list_invoices_filtered(
                     "acts_sum": sum_acts,
                     "free_acts_count": free_acts_count,
                 }
+            )
+
+        if sort_by == "acts_count":
+            result.sort(key=lambda x: x["acts_count"], reverse=(sort_dir == "desc"))
+        elif sort_by == "free_acts_count":
+            result.sort(
+                key=lambda x: x["free_acts_count"], reverse=(sort_dir == "desc")
             )
 
         return result
