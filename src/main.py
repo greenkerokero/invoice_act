@@ -204,8 +204,12 @@ def dashboard(request: Request):
 def unlinked_acts(request: Request):
     session = get_session()
     try:
-        employees = session.query(Employee).all()
-        contractors = session.query(Contractor).all()
+        employees = (
+            session.query(Employee)
+            .order_by(Employee.last_name, Employee.first_name)
+            .all()
+        )
+        contractors = session.query(Contractor).order_by(Contractor.name).all()
 
         return templates.TemplateResponse(
             "unlinked_acts.html",
@@ -223,8 +227,12 @@ def unlinked_acts(request: Request):
 def linked_acts_page(request: Request):
     session = get_session()
     try:
-        employees = session.query(Employee).all()
-        contractors = session.query(Contractor).all()
+        employees = (
+            session.query(Employee)
+            .order_by(Employee.last_name, Employee.first_name)
+            .all()
+        )
+        contractors = session.query(Contractor).order_by(Contractor.name).all()
         return templates.TemplateResponse(
             "linked_acts.html",
             {"request": request, "employees": employees, "contractors": contractors},
