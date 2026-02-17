@@ -51,6 +51,7 @@
         .data-header .data-cell.sortable:hover { background-color: #d3d7db; }
         .data-header .data-cell.sort-asc::after { content: ' ▲'; }
         .data-header .data-cell.sort-desc::after { content: ' ▼'; }
+        .data-header .data-cell.wrap-header { white-space: normal; line-height: 1.2; }
         .data-row-wrapper {
             display: flex;
             flex-direction: column;
@@ -135,21 +136,22 @@
 
         <h5 class="mt-4">Счета</h5>
         <div class="table-wrapper">
-            <div class="data-header" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) 36px;">
+            <div class="data-header" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) minmax(85px, 0.8fr) 36px;">
                 <div class="data-cell"></div>
                 <div class="data-cell"></div>
-                <div class="data-cell">№ счета</div>
-                <div class="data-cell">Дата</div>
+                <div class="data-cell sortable" data-sort="number" onclick="sortInvoices('number')">№ счета</div>
+                <div class="data-cell sortable" data-sort="date" onclick="sortInvoices('date')">Дата</div>
                 <div class="data-cell">Сумма</div>
-                <div class="data-cell">Дата оплаты</div>
-                <div class="data-cell">Дедлайн</div>
+                <div class="data-cell sortable" data-sort="payment_date" onclick="sortInvoices('payment_date')">Дата оплаты</div>
+                <div class="data-cell sortable" data-sort="deadline" onclick="sortInvoices('deadline')">Дедлайн</div>
                 <div class="data-cell">Дней</div>
-                <div class="data-cell">Ответственный</div>
-                <div class="data-cell">Мотивируемый</div>
-                <div class="data-cell">Акты</div>
+                <div class="data-cell sortable" data-sort="responsible_import" onclick="sortInvoices('responsible_import')">Ответственный</div>
+                <div class="data-cell sortable" data-sort="motivated_person" onclick="sortInvoices('motivated_person')">Мотивируемый</div>
+                <div class="data-cell sortable" data-sort="acts_count" onclick="sortInvoices('acts_count')">Акты</div>
+                <div class="data-cell sortable wrap-header" data-sort="free_acts_count" onclick="sortInvoices('free_acts_count')">Свободные акты</div>
                 <div class="data-cell"></div>
             </div>
-            <div class="data-table" id="invoicesTable" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) 36px;">
+            <div class="data-table" id="invoicesTable" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) minmax(85px, 0.8fr) 36px;">
                 <div id="invoicesBody"></div>
             </div>
         </div>
@@ -157,11 +159,11 @@
         <h5 class="mt-4">Свободные акты</h5>
         <div class="table-wrapper">
             <div class="data-header" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(130px, 1.5fr) minmax(160px, 1.8fr);">
-                <div class="data-cell">№ акта</div>
-                <div class="data-cell">Дата подписания</div>
-                <div class="data-cell">Сумма</div>
-                <div class="data-cell">Ответственный менеджер</div>
-                <div class="data-cell">Привязать к счету</div>
+                <div class="data-cell sortable" data-sort="number" onclick="sortActs('number')">№ акта</div>
+                <div class="data-cell sortable" data-sort="signing_date" onclick="sortActs('signing_date')">Дата подписания</div>
+                <div class="data-cell sortable" data-sort="amount" onclick="sortActs('amount')">Сумма</div>
+                <div class="data-cell sortable" data-sort="responsible_manager" onclick="sortActs('responsible_manager')">Ответственный менеджер</div>
+                <div class="data-cell">Действия</div>
             </div>
             <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(130px, 1.5fr) minmax(160px, 1.8fr);">
                 <div id="unlinkedActsBody"></div>
@@ -203,12 +205,14 @@
         }
 
         const contractorId = {{ contractor.id }};
-        const invoicesData = {{ invoices | tojson }};
-        const unlinkedActsData = {{ unlinked_acts | tojson }};
+        let invoicesData = {{ invoices | tojson }};
+        let unlinkedActsData = {{ unlinked_acts | tojson }};
         
         let employees = [];
         let pendingDeleteType = null;
         let pendingDeleteId = null;
+        let currentSortInvoices = { field: 'date', direction: 'desc' };
+        let currentSortActs = { field: 'signing_date', direction: 'desc' };
 
         function formatName(name) {
             if (!name) return '';
@@ -231,11 +235,70 @@
                 });
         }
 
+        function sortInvoices(field) {
+            if (currentSortInvoices.field === field) {
+                currentSortInvoices.direction = currentSortInvoices.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortInvoices.field = field;
+                currentSortInvoices.direction = 'asc';
+            }
+            updateSortIndicatorsInvoices();
+            renderInvoices();
+        }
+
+        function sortActs(field) {
+            if (currentSortActs.field === field) {
+                currentSortActs.direction = currentSortActs.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortActs.field = field;
+                currentSortActs.direction = 'asc';
+            }
+            updateSortIndicatorsActs();
+            renderUnlinkedActs();
+        }
+
+        function updateSortIndicatorsInvoices() {
+            document.querySelectorAll('#invoicesTable ~ .data-header .data-cell.sortable').forEach(cell => {
+                cell.classList.remove('sort-asc', 'sort-desc');
+                if (cell.dataset.sort === currentSortInvoices.field) {
+                    cell.classList.add(currentSortInvoices.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        function updateSortIndicatorsActs() {
+            document.querySelectorAll('#unlinkedActsBody ~ .data-header .data-cell.sortable').forEach(cell => {
+                cell.classList.remove('sort-asc', 'sort-desc');
+                if (cell.dataset.sort === currentSortActs.field) {
+                    cell.classList.add(currentSortActs.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        function sortArray(arr, field, direction) {
+            return arr.sort((a, b) => {
+                let valA = a[field];
+                let valB = b[field];
+                
+                if (valA === null || valA === undefined) valA = '';
+                if (valB === null || valB === undefined) valB = '';
+                
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                
+                if (valA < valB) return direction === 'asc' ? -1 : 1;
+                if (valA > valB) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
         function renderInvoices() {
             const body = document.getElementById('invoicesBody');
             body.innerHTML = '';
 
-            if (invoicesData.length === 0) {
+            const sortedInvoices = sortArray([...invoicesData], currentSortInvoices.field, currentSortInvoices.direction);
+
+            if (sortedInvoices.length === 0) {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'data-row-wrapper';
                 wrapper.innerHTML = '<div class="data-row" style="grid-template-columns: 1fr;"><div class="data-cell text-center text-muted">Нет счетов</div></div>';
@@ -243,7 +306,7 @@
                 return;
             }
 
-            invoicesData.forEach(inv => {
+            sortedInvoices.forEach(inv => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'data-row-wrapper';
                 wrapper.dataset.invoiceId = inv.id;
@@ -293,6 +356,7 @@
                         </select>
                     </div>
                     <div class="data-cell">${inv.acts_count ? inv.acts_count + ' (' + inv.acts_sum.toFixed(2) + ')' : '-'}</div>
+                    <div class="data-cell">${inv.free_acts_count > 0 ? inv.free_acts_count : '-'}</div>
                     <div class="data-cell data-cell-btn"><button class="btn btn-sm btn-danger" onclick="confirmDeleteInvoice(${inv.id}, '${inv.number}')">X</button></div>
                 `;
                 wrapper.appendChild(row);
@@ -308,6 +372,8 @@
 
                 body.appendChild(wrapper);
             });
+            
+            updateSortIndicatorsInvoices();
         }
 
         function toggleActs(invoiceId) {
@@ -382,7 +448,9 @@
             const body = document.getElementById('unlinkedActsBody');
             body.innerHTML = '';
 
-            if (unlinkedActsData.length === 0) {
+            const sortedActs = sortArray([...unlinkedActsData], currentSortActs.field, currentSortActs.direction);
+
+            if (sortedActs.length === 0) {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'data-row-wrapper';
                 wrapper.innerHTML = '<div class="data-row" style="grid-template-columns: 1fr;"><div class="data-cell text-center text-muted">Нет свободных актов</div></div>';
@@ -390,7 +458,7 @@
                 return;
             }
 
-            unlinkedActsData.forEach(act => {
+            sortedActs.forEach(act => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'data-row-wrapper';
 
@@ -420,27 +488,17 @@
                         </select>
                     </div>
                     <div class="data-cell">
-                        <select class="form-select form-select-sm" id="invoice-${act.id}">
-                            <option value="">-- Выбрать счет --</option>
-                            ${invoicesData.map(inv => `<option value="${inv.id}">${inv.number} (${Number(inv.amount).toFixed(2)})</option>`).join('')}
-                        </select>
+                        <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:nowrap;">
+                            <button class="btn btn-sm btn-success" onclick="applyChanges(${act.id})">Применить</button>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteAct(${act.id}, '${act.number}')">Удалить</button>
+                        </div>
                     </div>
                 `;
                 wrapper.appendChild(row);
-                
-                const actionsRow = document.createElement('div');
-                actionsRow.className = 'data-row';
-                actionsRow.style.gridColumn = '1 / -1';
-                actionsRow.innerHTML = `
-                    <div class="data-cell" style="display:flex;gap:4px;flex-wrap:nowrap;">
-                        <button class="btn btn-sm btn-success" onclick="applyChanges(${act.id})">Применить</button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteAct(${act.id}, '${act.number}')">Удалить</button>
-                    </div>
-                `;
-                wrapper.appendChild(actionsRow);
-                
                 body.appendChild(wrapper);
             });
+            
+            updateSortIndicatorsActs();
         }
 
         function updateInvoice(invoiceId, field, value) {
@@ -492,16 +550,13 @@
 
         function applyChanges(actId) {
             const responsibleSelect = document.getElementById('responsible-' + actId);
-            const invoiceSelect = document.getElementById('invoice-' + actId);
             const amountInput = document.getElementById('amount-' + actId);
             
             const responsible = responsibleSelect ? responsibleSelect.value : '';
-            const invoiceId = invoiceSelect ? invoiceSelect.value : '';
             const amount = amountInput ? parseFloat(amountInput.value) : 0;
 
             const formData = new FormData();
             if (responsible) formData.append('responsible_manager', responsible);
-            if (invoiceId) formData.append('invoice_id', invoiceId);
             if (amount >= 0) formData.append('amount', amount);
 
             fetch('/act/update/' + actId, {

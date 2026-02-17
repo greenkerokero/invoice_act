@@ -1438,6 +1438,7 @@ def contractor_page(request: Request, contractor_id: int):
         unlinked_acts = [a for a in all_acts if a.invoice_id is None]
 
         invoices_data = []
+        free_acts_count = len(unlinked_acts)
         for inv in invoices:
             acts = [a for a in inv.acts] if inv.acts else []
             linked_acts_sum = sum(a.amount for a in acts) if acts else 0
@@ -1460,6 +1461,7 @@ def contractor_page(request: Request, contractor_id: int):
                     "status": inv.status,
                     "acts_count": len(acts),
                     "acts_sum": linked_acts_sum,
+                    "free_acts_count": free_acts_count,
                 }
             )
 
