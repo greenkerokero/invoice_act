@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карточка контрагента</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .form-control, .form-select {
+            border-color: #adb5bd; box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea; box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.2rem rgba(102,126,234,0.25);
+        }
+        .container { max-width: 2200px; }
+        .table-wrapper { }
+        .filter-zone { background-color: #fff; border-radius: 8px; padding: 10px; margin-bottom: 15px; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; padding-top: 0.3rem; padding-bottom: 0.3rem; }
+        .navbar-brand { padding-top: 0.2rem; padding-bottom: 0.2rem; font-size: 1rem; }
+        .nav-link { padding: 0.3rem 0.5rem !important; font-size: 0.9rem; }
+        .nav-link.active { 
+            font-weight: bold; 
+            text-decoration: underline;
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 4px;
+        }
+
+        .data-table {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            background: #fff;
+        }
+        .data-header {
+            display: grid;
+            grid-template-columns: var(--cols);
+            background-color: #e9ecef;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #dee2e6;
+            border-radius: 4px 4px 0 0;
+        }
+        .data-header .data-cell { white-space: nowrap; }
+        .data-header .data-cell.sortable { cursor: pointer; user-select: none; }
+        .data-header .data-cell.sortable:hover { background-color: #d3d7db; }
+        .data-header .data-cell.sort-asc::after { content: ' ▲'; }
+        .data-header .data-cell.sort-desc::after { content: ' ▼'; }
+        .data-row-wrapper {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .data-row {
+            display: grid;
+            grid-template-columns: var(--cols);
+            align-items: center;
+            padding: 4px 0;
+        }
+        .data-row:hover { background-color: #f8f9fa; }
+        .data-cell {
+            padding: 4px 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+        }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .days-input { width: 100%; min-width: 50px; text-align: center; }
+        .data-cell input, .data-cell select { width: 100%; min-width: 0; }
+        .data-cell select.form-select-sm { font-size: inherit; }
+        .data-cell-btn { overflow: visible; text-overflow: clip; }
+        .nested-container {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 10px 20px;
+            border-top: 1px dotted #ccc;
+        }
+        .nested-container.active { display: block; }
+        .nested-table {
+            border: 1px solid #ced4da;
+            background: #fff;
+            width: fit-content;
+        }
+        .nested-table .data-header .data-cell.linked { background-color: #cfe2ff; color: #084298; }
+        .nested-table .data-header .data-cell.free { background-color: #f8d7da; color: #842029; }
+        .nested-table .data-cell { padding: 4px 6px; font-size: 0.85em; }
+        .nested-table-wrapper {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #667eea;
+            margin: 5px 0;
+        }
+        .action-buttons .btn { white-space: nowrap; }
+        .contractor-header {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .deadline-warning { background-color: #ffe6e6 !important; }
+        .deadline-overdue { background-color: #ffcccc !important; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">Учет счетов и актов</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Счета</a>
+                <a class="nav-link" href="/linked-acts">Привязанные акты</a>
+                <a class="nav-link" href="/unlinked-acts">Непривязанные акты</a>
+                <a class="nav-link" href="/import">Импорт и Настройки</a>
+                <a class="nav-link" href="/employees">Сотрудники</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="contractor-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">{{ format_contractor_name(contractor.name) }}</h4>
+                    <span class="text-muted">ИНН: {{ contractor.inn or 'не указан' }}</span>
+                </div>
+                <a href="/" class="btn btn-outline-primary">Назад к списку</a>
+            </div>
+        </div>
+
+        <h5 class="mt-4">Счета</h5>
+        <div class="table-wrapper">
+            <div class="data-header" style="--cols: 26px 6px minmax(80px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 1fr) minmax(100px, 1.2fr) minmax(50px, 0.6fr) minmax(110px, 1.3fr);">
+                <div class="data-cell"></div>
+                <div class="data-cell"></div>
+                <div class="data-cell">№ счета</div>
+                <div class="data-cell">Дата</div>
+                <div class="data-cell">Сумма</div>
+                <div class="data-cell">Дата оплаты</div>
+                <div class="data-cell">Дедлайн</div>
+                <div class="data-cell">Дней</div>
+                <div class="data-cell">Ответственный</div>
+            </div>
+            <div class="data-table" id="invoicesTable" style="--cols: 26px 6px minmax(80px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 1fr) minmax(100px, 1.2fr) minmax(50px, 0.6fr) minmax(110px, 1.3fr);">
+                <div id="invoicesBody"></div>
+            </div>
+        </div>
+
+        <h5 class="mt-4">Свободные акты</h5>
+        <div class="table-wrapper">
+            <div class="data-header" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(100px, 1fr);">
+                <div class="data-cell">№ акта</div>
+                <div class="data-cell">Дата подписания</div>
+                <div class="data-cell">Сумма</div>
+                <div class="data-cell">Ответственный менеджер</div>
+            </div>
+            <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(100px, 1fr);">
+                <div id="unlinkedActsBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const LEGAL_FORMS = ['ооо', 'ип', 'ао', 'зао', 'оао', 'пао', 'нко', 'ано', 'фгуп', 'муп'];
+        
+        function formatContractorName(name) {
+            if (!name) return '';
+            const parts = name.trim().split(/\s+/);
+            return parts.map(part => {
+                if (LEGAL_FORMS.includes(part.toLowerCase())) {
+                    return part.toUpperCase();
+                }
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }).join(' ');
+        }
+
+        const contractorId = {{ contractor.id }};
+        const invoicesData = {{ invoices | tojson }};
+        const unlinkedActsData = {{ unlinked_acts | tojson }};
+
+        function formatName(name) {
+            if (!name) return '';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return parts.slice(1).join(' ') + ' ' + parts[0];
+            }
+            return name;
+        }
+
+        function renderInvoices() {
+            const body = document.getElementById('invoicesBody');
+            body.innerHTML = '';
+
+            if (invoicesData.length === 0) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'data-row-wrapper';
+                wrapper.innerHTML = '<div class="data-row" style="grid-template-columns: 1fr;"><div class="data-cell text-center text-muted">Нет счетов</div></div>';
+                body.appendChild(wrapper);
+                return;
+            }
+
+            invoicesData.forEach(inv => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'data-row-wrapper';
+                wrapper.dataset.invoiceId = inv.id;
+                wrapper.dataset.contractorId = inv.contractor_id;
+
+                let deadlineClass = '';
+                if (inv.deadline) {
+                    const deadlineDate = new Date(inv.deadline);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    deadlineDate.setHours(0, 0, 0, 0);
+                    const daysDiff = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysDiff < 0) {
+                        deadlineClass = 'deadline-overdue';
+                    } else if (daysDiff <= 10) {
+                        deadlineClass = 'deadline-warning';
+                    }
+                }
+
+                const row = document.createElement('div');
+                row.className = 'data-row' + (deadlineClass ? ' ' + deadlineClass : '');
+                row.innerHTML = `
+                    <div class="data-cell data-cell-btn"><button class="btn btn-sm btn-outline-primary" onclick="toggleActs(${inv.id})">+</button></div>
+                    <div class="data-cell"></div>
+                    <div class="data-cell">${inv.number}</div>
+                    <div class="data-cell">${inv.date}</div>
+                    <div class="data-cell">${Number(inv.amount).toFixed(2)}</div>
+                    <div class="data-cell"><input type="date" class="form-control form-control-sm" value="${inv.payment_date || ''}" onchange="updateInvoice(${inv.id}, 'payment_date', this.value)"></div>
+                    <div class="data-cell">${inv.deadline || ''}</div>
+                    <div class="data-cell"><input type="number" 
+                           class="form-control form-control-sm days-input" 
+                           value="${inv.deadline_days || ''}" 
+                           min="0" 
+                           placeholder="0" 
+                           onkeydown="return event.keyCode !== 189 && event.keyCode !== 109 && event.key !== '-'"
+                           oninput="if(this.value < 0) this.value = Math.abs(this.value)"
+                           onchange="calculateDeadline(${inv.id}, this.value, this)"></div>
+                    <div class="data-cell">${formatName(inv.responsible_import) || ''}</div>
+                `;
+                wrapper.appendChild(row);
+
+                const nested = document.createElement('div');
+                nested.className = 'nested-container';
+                nested.id = 'nested-' + inv.id;
+                nested.innerHTML = `
+                    <div class="nested-section-linked" id="linked-acts-content-${inv.id}"></div>
+                `;
+                wrapper.appendChild(nested);
+
+                body.appendChild(wrapper);
+            });
+        }
+
+        function toggleActs(invoiceId) {
+            const nested = document.getElementById('nested-' + invoiceId);
+            
+            if (nested.classList.contains('active')) {
+                nested.classList.remove('active');
+            } else {
+                nested.classList.add('active');
+                loadLinkedActs(invoiceId);
+            }
+        }
+
+        function loadLinkedActs(invoiceId) {
+            fetch('/acts/by-invoice/' + invoiceId)
+                .then(r => r.json())
+                .then(acts => {
+                    const container = document.getElementById('linked-acts-content-' + invoiceId);
+                    if (acts.length === 0) {
+                        container.innerHTML = '<div class="nested-table-wrapper"><h6>Привязанные акты</h6><span class="text-muted d-block">Нет привязанных актов</span></div>';
+                        return;
+                    }
+                    let html = '<div class="nested-table-wrapper"><h6>Привязанные акты</h6><div class="data-table nested-table" style="--cols: 120px 100px 100px 150px 180px;">';
+                    html += '<div class="data-header"><div class="data-cell linked">№ акта</div><div class="data-cell linked">Дата</div><div class="data-cell linked">Сумма</div><div class="data-cell linked">Ответственный</div><div class="data-cell linked">Действие</div></div>';
+                    acts.forEach(act => {
+                        html += `<div class="data-row-wrapper"><div class="data-row">
+                            <div class="data-cell">${act.number}</div>
+                            <div class="data-cell">${act.signing_date}</div>
+                            <div class="data-cell">${Number(act.amount).toFixed(2)}</div>
+                            <div class="data-cell">${act.responsible_manager || ''}</div>
+                            <div class="data-cell">
+                                <button class="btn btn-sm btn-success me-1" onclick="unlinkAct(${act.id})">Отвязать</button>
+                            </div>
+                        </div></div>`;
+                    });
+                    html += '</div></div>';
+                    container.innerHTML = html;
+                });
+        }
+
+        function renderUnlinkedActs() {
+            const body = document.getElementById('unlinkedActsBody');
+            body.innerHTML = '';
+
+            if (unlinkedActsData.length === 0) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'data-row-wrapper';
+                wrapper.innerHTML = '<div class="data-row" style="grid-template-columns: 1fr;"><div class="data-cell text-center text-muted">Нет свободных актов</div></div>';
+                body.appendChild(wrapper);
+                return;
+            }
+
+            unlinkedActsData.forEach(act => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'data-row-wrapper';
+
+                const row = document.createElement('div');
+                row.className = 'data-row';
+                row.innerHTML = `
+                    <div class="data-cell">${act.number}</div>
+                    <div class="data-cell">${act.signing_date || ''}</div>
+                    <div class="data-cell"><input type="number" 
+                           class="form-control form-control-sm" 
+                           style="width:100%" 
+                           step="0.01" 
+                           min="0" 
+                           value="${Number(act.amount).toFixed(2)}" 
+                           id="amount-${act.id}" 
+                           onkeydown="return event.keyCode !== 189 && event.keyCode !== 109 && event.key !== '-'"
+                           oninput="if(this.value < 0) this.value = Math.abs(this.value)"
+                           onchange="updateAmount(${act.id}, this.value)"></div>
+                    <div class="data-cell">${act.responsible_manager || ''}</div>
+                `;
+                wrapper.appendChild(row);
+                body.appendChild(wrapper);
+            });
+        }
+
+        function updateInvoice(invoiceId, field, value) {
+            const formData = new FormData();
+            formData.append(field, value);
+            fetch('/invoice/update/' + invoiceId, {
+                method: 'POST',
+                body: formData
+            });
+        }
+
+        function calculateDeadline(invoiceId, days, inputEl) {
+            const daysNum = parseInt(days);
+            if (!days || isNaN(daysNum) || daysNum < 0) return;
+            
+            fetch('/invoice/calculate-deadline/' + invoiceId, {
+                method: 'POST',
+                body: new URLSearchParams({ days: days })
+            }).then(r => r.json())
+              .then(result => {
+                  if (result.success) {
+                      const wrapper = inputEl.closest('.data-row-wrapper');
+                      const cells = wrapper.querySelector('.data-row').querySelectorAll('.data-cell');
+                      cells[6].textContent = result.deadline;
+                  } else {
+                      alert(result.error || 'Ошибка расчёта дедлайна');
+                  }
+              });
+        }
+
+        function updateAmount(actId, value) {
+            let amount = parseFloat(value);
+            if (isNaN(amount) || amount < 0) {
+                renderUnlinkedActs();
+                return;
+            }
+            
+            fetch('/act/update/' + actId, {
+                method: 'POST',
+                body: new URLSearchParams({ amount: amount })
+            }).then(r => r.json())
+              .then(result => {
+                  if (!result.success) {
+                      alert('Ошибка: ' + (result.error || 'Unknown error'));
+                      renderUnlinkedActs();
+                  }
+              });
+        }
+
+        function unlinkAct(actId) {
+            fetch('/act/unlink/' + actId, { method: 'POST' })
+                .then(() => location.reload());
+        }
+
+        renderInvoices();
+        renderUnlinkedActs();
+    </script>
+</body>
+</html>

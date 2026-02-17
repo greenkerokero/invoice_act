@@ -1411,6 +1411,86 @@ def list_invoices_filtered(
         session.close()
 
 
+@app.get("/contractor/{contractor_id}", response_class=HTMLResponse)
+def contractor_page(request: Request, contractor_id: int):
+    session = get_session()
+    try:
+        contractor = (
+            session.query(Contractor).filter(Contractor.id == contractor_id).first()
+        )
+        if not contractor:
+            return HTMLResponse("Контрагент не найден", status_code=404)
+
+        invoices = (
+            session.query(Invoice)
+            .filter(Invoice.contractor_id == contractor_id)
+            .order_by(Invoice.date.desc())
+            .all()
+        )
+
+        all_acts = (
+            session.query(Act)
+            .filter(Act.contractor_id == contractor_id)
+            .options(joinedload(Act.invoice))
+            .all()
+        )
+
+        unlinked_acts = [a for a in all_acts if a.invoice_id is None]
+
+        invoices_data = []
+        for inv in invoices:
+            acts = [a for a in inv.acts] if inv.acts else []
+            linked_acts_sum = sum(a.amount for a in acts) if acts else 0
+            invoices_data.append(
+                {
+                    "id": inv.id,
+                    "number": inv.number,
+                    "date": inv.date.strftime("%d.%m.%Y") if inv.date else "",
+                    "amount": inv.amount,
+                    "contractor_id": inv.contractor_id,
+                    "payment_date": inv.payment_date.strftime("%Y-%m-%d")
+                    if inv.payment_date
+                    else "",
+                    "deadline": inv.deadline.strftime("%Y-%m-%d")
+                    if inv.deadline
+                    else "",
+                    "deadline_days": inv.deadline_days,
+                    "responsible_import": inv.responsible_import,
+                    "motivated_person": inv.motivated_person,
+                    "status": inv.status,
+                    "acts_count": len(acts),
+                    "acts_sum": linked_acts_sum,
+                }
+            )
+
+        unlinked_acts_data = []
+        for act in unlinked_acts:
+            unlinked_acts_data.append(
+                {
+                    "id": act.id,
+                    "number": act.number,
+                    "signing_date": act.signing_date.strftime("%d.%m.%Y")
+                    if act.signing_date
+                    else "",
+                    "amount": act.amount,
+                    "contractor_id": act.contractor_id,
+                    "responsible_manager": act.responsible_manager,
+                }
+            )
+
+        return templates.TemplateResponse(
+            "contractor.html",
+            {
+                "request": request,
+                "contractor": contractor,
+                "invoices": invoices_data,
+                "unlinked_acts": unlinked_acts_data,
+            },
+        )
+    finally:
+        session.close()
+
+
 @app.get("/contractors/list")
 def list_contractors():
     session = get_session()

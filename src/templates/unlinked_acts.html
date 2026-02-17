@@ -341,7 +341,7 @@
                 row.className = 'data-row';
                 row.innerHTML = `
                     <div class="data-cell">${act.number}</div>
-                    <div class="data-cell">${formatContractorName(act.contractor_name) || ''}</div>
+                    <div class="data-cell">${formatContractorName(act.contractor_name) || ''} <a href="/contractor/${act.contractor_id}" target="_blank" title="Открыть карточку контрагента" style="text-decoration:none; color:#667eea;">&#8599;</a></div>
                     <div class="data-cell">${act.contractor_inn || ''}</div>
                     <div class="data-cell">${act.signing_date || ''}</div>
                     <div class="data-cell"><input type="number" 
