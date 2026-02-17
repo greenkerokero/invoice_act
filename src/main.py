@@ -123,6 +123,7 @@ def format_contractor_name(name: str) -> str:
         return name
     parts = name.strip().split()
     result_parts = []
+    non_legal_parts = []
     legal_forms_lower = [
         "ооо",
         "ип",
@@ -139,8 +140,9 @@ def format_contractor_name(name: str) -> str:
         if part.lower() in legal_forms_lower:
             result_parts.append(part.upper())
         else:
-            result_parts.append(part.capitalize())
-    return " ".join(result_parts)
+            non_legal_parts.append(part)
+    non_legal_parts = [p.title() for p in non_legal_parts]
+    return " ".join(non_legal_parts + result_parts)
 
 
 def parse_datetime(value) -> Optional[datetime]:
@@ -152,7 +154,7 @@ def parse_datetime(value) -> Optional[datetime]:
         return datetime.combine(value, datetime.min.time())
     if isinstance(value, (int, float)):
         try:
-            return datetime(1899, 12, 30) + datetime.timedelta(days=int(value))
+            return datetime(1899, 12, 30) + timedelta(days=int(value))
         except (ValueError, OverflowError):
             return None
     if isinstance(value, str):
