@@ -337,7 +337,7 @@
                     contractors.forEach(c => {
                         const option = document.createElement('option');
                         option.value = c.id;
-                        option.textContent = c.name;
+                        option.textContent = formatContractorName(c.name);
                         contractorSelect.appendChild(option);
                     });
                 });
