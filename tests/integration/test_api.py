@@ -50,8 +50,8 @@ class TestStopWordsAPI:
     def test_add_stop_word(self, client):
         """Тест: добавление стоп-слова"""
         response = client.post(
-            "/import",
-            data={"new_stop_word": "тестовое"},
+            "/stop-words/add",
+            data={"word": "тестовое"},
         )
         assert response.status_code in (200, 302, 303)
 
@@ -68,7 +68,7 @@ class TestImportExcel:
         """Тест: загрузка невалидного файла 1С"""
         fake_file = BytesIO(b"not an excel file")
         response = client.post(
-            "/import/1c",
+            "/import-1c",
             files={
                 "file": (
                     "test.xlsx",
@@ -83,7 +83,7 @@ class TestImportExcel:
         """Тест: загрузка невалидного файла СБИС"""
         fake_file = BytesIO(b"not an excel file")
         response = client.post(
-            "/import/sbis",
+            "/import-sbis",
             files={
                 "file": (
                     "test.xlsx",
