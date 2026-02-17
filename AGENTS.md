@@ -1,156 +1,167 @@
-# AGENTS.md - Developer Guidelines for Invoice Act Tracker
+# AGENTS.md - Руководство для разработчиков Invoice Act Tracker
 
-## Core Principles
+## Основные принципы
 
-- Write reasoning in English
-- Always check the application for errors after making changes
-- Use ports from 10000-10999 range for test runs
-- Stop launched ports after checks (except port 8000 - user run)
-- Use ruff linter for Python
-- Follow best practices, avoid hacks
-- If you need to stop user run (port 8000), stop it, but after all work notify that user run is stopped. User will restart it manually.
+- Писать рассуждения на русском языке
+- Вести AGENTS.md всегда на русском языке
+- После изменений проверять приложение на ошибки
+- Использовать порты из диапазона 10000-10999 для тестовых запусков
+- Останавливать запущенные порты после проверок (кроме порта 8000 - пользовательский запуск)
+- Использовать линтер ruff для Python
+- Придерживаться лучших практик, избегать костылей
+- Если нужно остановить пользовательский запуск (порт 8000), остановить его, но после всех работ сообщить, что пользовательский запуск остановлен. Пользователь сам вручную его запустит.
 
----
+### Управление зависимостями
 
-## Project
-
-FastAPI web application for tracking invoices (from 1C) and signed acts (from SBIS), matching them, payment control, and KPI monitoring of responsible employees.
-
-- **Language**: Python 3.10+
-- **Framework**: FastAPI
-- **Database**: SQLite with SQLAlchemy ORM
-- **Package Manager**: uv
-- **Dependencies**: See `pyproject.toml`
-
----
-
-## Build, Run & Development Commands
-
-### Running the Application
+**ВАЖНО:** Все зависимости в проект устанавливаются ТОЛЬКО командой `uv add`:
 
 ```bash
-# Using the provided batch script (port 8000)
+uv add <package_name>          # основная зависимость
+uv add --dev <package_name>   # зависимость для разработки
+```
+
+**ЗАПРЕЩЕНО** использовать:
+- `uv pip install ...`
+- `uv run python -m ...`
+- `python -m pip install ...`
+
+Если `uv add` не работает:
+1. Остановить работу
+2. Выяснить причину
+3. Сообщить пользователю о проблеме
+4. Предложить варианты решения
+
+---
+
+## Проект
+
+Веб-приложение FastAPI для учёта выставленных счетов (из 1С) и подписанных актов (из СБИС), их связывания (мэтчинга), контроля оплаты и отслеживания KPI ответственных сотрудников.
+
+- **Язык**: Python 3.10+
+- **Framework**: FastAPI
+- **База данных**: SQLite с SQLAlchemy ORM
+- **Пакетный менеджер**: uv
+- **Зависимости**: см. `pyproject.toml`
+
+---
+
+## Команды сборки, запуска и разработки
+
+### Запуск приложения
+
+```bash
+# Использовать batch-скрипт (порт 8000)
 3_run.bat
 
-# Or manually with uv (port 8000 - for user)
+# Или вручную с uv (порт 8000 - для пользователя)
 uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 
-# For testing - use ports from 10000-10999 range
+# Для тестирования - использовать порты из диапазона 10000-10999
 uv run uvicorn src.main:app --host 127.0.0.1 --port 10000 --reload
 ```
 
-**Important:**
-- Port 8000 is user run - do not stop it unless necessary
-- Use ports 10000-10999 for test runs
-- After checks, stop launched test ports
+**Важно:**
+- Порт 8000 - пользовательский запуск, не останавливать без необходимости
+- Для тестовых запусков использовать порты 10000-10999
+- После проверок останавливать запущенные тестовые порты
 
-### Dependency Management
-
-```bash
-# Add a new dependency (automatically updates pyproject.toml)
-uv add <package_name>
-
-# Add a dev dependency
-uv add --dev <package_name>
-```
-
-### Database Management
+### Управление базой данных
 
 ```bash
-# Clear database (creates backup first)
+# Очистка базы данных (создаётся backup)
 clear_database.bat
-# Or: python clear_database.py
+# Или: python clear_database.py
 
-# Restore from backup
+# Восстановление из backup
 restore_database.bat
-# Or: python restore_database.py
+# Или: python restore_database.py
 ```
 
-### Linting & Type Checking
+### Линтинг и проверка типов
 
 ```bash
-# Install ruff linter
+# Установить линтер ruff
 uv add --dev ruff
 
-# Run linter
+# Запустить линтер
 uv run ruff check src/
 
-# Run linter with auto-fix
+# Запустить линтер с автоисправлением
 uv run ruff check src/ --fix
 
-# Format code
+# Форматировать код
 uv run ruff format src/
 ```
 
-### Testing
+### Тестирование
 
 ```bash
-# Run all tests
+# Запустить все тесты
 uv run pytest
 
-# Run a single test file
+# Запустить один тестовый файл
 uv run pytest tests/test_file.py
 
-# Run a single test function
+# Запустить одну тестовую функцию
 uv run pytest tests/test_file.py::test_function_name
 
-# Run tests matching a pattern
+# Запустить тесты по шаблону
 uv run pytest -k "test_pattern"
 ```
 
 ---
 
-## Code Style Guidelines
+## Руководство по стилю кода
 
 ### Git Workflow
 
-After making changes:
-1. Run linter `uv run ruff check src/` and fix errors
-2. Check application for errors
-3. Create commit with message reflecting the essence of the change
-4. Push changes to GitHub
+После внесения изменений:
+1. Запустить линтер `uv run ruff check src/` и исправить ошибки
+2. Проверить приложение на ошибки
+3. Создать коммит с комментарием на русском языке, отражающим суть изменения
+4. Запушить изменения в GitHub
 
 ```bash
-# Commit example
+# Пример коммита
 git add .
 git commit -m "Добавлена валидация email при импорте сотрудников"
 git push
 ```
 
-**Important:**
-- Do not write generic commit messages like "Очередная итерация правок от пользователя"
-- Commit message should reflect the specific change
+**Важно:**
+- Не писать в коммитах "Очередная итерация правок от пользователя" и подобное
+- Комментарий должен отражать конкретное изменение
 
-### General Principles
+### Общие принципы
 
-- Follow PEP 8 style guide
-- Use Python 3.10+ features (type hints, match/case where appropriate)
-- Keep functions focused and small (< 50 lines when possible)
-- Use meaningful variable and function names
+- Следовать PEP 8
+- Использовать возможности Python 3.10+ (type hints, match/case где уместно)
+- Делать функции небольшими (< 50 строк)
+- Использовать понятные имена переменных и функций
 
-### Best Practices
+### Лучшие практики
 
 **Python:**
-- Use ruff linter: `uv run ruff check src/`
-- Fix all linter errors before commit
-- Avoid bare except blocks
-- Always close DB sessions in finally block
+- Использовать линтер ruff: `uv run ruff check src/`
+- Исправлять все ошибки линтера перед коммитом
+- Избегать голых except-блоков
+- Всегда закрывать сессии БД в finally-блоке
 
 **JavaScript:**
-- Use modern ES6+ syntax
-- Avoid var, use const/let
-- Follow consistent code style
+- Использовать современный ES6+ синтаксис
+- Избегать var, использовать const/let
+- Придерживаться единого стиля кода
 
-### Imports
+### Импорты
 
-Order imports in each file:
+Порядок импортов в файле:
 
-1. Standard library (`os`, `re`, `datetime`, etc.)
-2. Third-party packages (`fastapi`, `sqlalchemy`, `openpyxl`, etc.)
-3. Local application imports (`from .database import ...`)
+1. Стандартная библиотека (`os`, `re`, `datetime` и т.д.)
+2. Сторонние пакеты (`fastapi`, `sqlalchemy`, `openpyxl` и т.д.)
+3. Локальные импорты приложения (`from .database import ...`)
 
 ```python
-# Example import order
+# Пример порядка импортов
 import os
 import re
 from datetime import datetime, date, timedelta
@@ -165,33 +176,33 @@ from openpyxl import load_workbook
 from .database import get_session, init_db, Contractor, Employee
 ```
 
-### Type Hints
+### Аннотации типов
 
-Always use type hints for function parameters and return types:
+Всегда использовать аннотации типов для параметров функций и возвращаемых значений:
 
 ```python
-# Good
+# Хорошо
 def get_or_create_contractor(session, name: str, inn: str = None) -> Contractor:
     ...
 
 def parse_datetime(value) -> Optional[datetime]:
     ...
 
-# Avoid
+# Плохо
 def get_or_create_contractor(session, name, inn=None):
     ...
 ```
 
-### Naming Conventions
+### Соглашения об именовании
 
-- **Variables/functions**: snake_case (`get_session`, `invoice_amount`)
-- **Classes**: PascalCase (`Contractor`, `Invoice`, `Employee`)
-- **Constants**: UPPER_SNAKE_CASE (`MAX_FILE_SIZE`, `ALLOWED_EXTENSIONS`)
-- **Private functions**: prefix with underscore (`_internal_helper`)
+- **Переменные/функции**: snake_case (`get_session`, `invoice_amount`)
+- **Классы**: PascalCase (`Contractor`, `Invoice`, `Employee`)
+- **Константы**: UPPER_SNAKE_CASE (`MAX_FILE_SIZE`, `ALLOWED_EXTENSIONS`)
+- **Приватные функции**: префикс с подчёркиванием (`_internal_helper`)
 
-### Database Models (SQLAlchemy)
+### Модели базы данных (SQLAlchemy)
 
-Follow this pattern:
+Следовать этому паттерну:
 
 ```python
 class Contractor(Base):
@@ -204,27 +215,27 @@ class Contractor(Base):
     invoices = relationship("Invoice", back_populates="contractor")
 ```
 
-### Error Handling
+### Обработка ошибок
 
-- Avoid bare `except:` clauses - catch specific exceptions
-- Use try/except with proper logging or user feedback
-- Return appropriate HTTP status codes in FastAPI endpoints
+- Избегать голых `except:` - ловить конкретные исключения
+- Использовать try/except с логированием или обратной связью пользователю
+- Возвращать соответствующие HTTP-коды статуса в эндпоинтах FastAPI
 
 ```python
-# Good
+# Хорошо
 try:
     result = risky_operation()
 except ValueError as e:
     raise HTTPException(status_code=400, detail=str(e))
 
-# Avoid
+# Плохо
 try:
     result = risky_operation()
 except:
     pass  # Silent failure
 ```
 
-### FastAPI Endpoints
+### Эндпоинты FastAPI
 
 ```python
 @app.get("/endpoint", response_class=HTMLResponse)
@@ -237,20 +248,20 @@ def endpoint_name(request: Request):
         session.close()
 ```
 
-### HTML Templates
+### HTML-шаблоны
 
-- Templates are in `src/templates/`
-- Use Jinja2 syntax
-- Helper functions like `format_contractor_name` are registered globally
+- Шаблоны находятся в `src/templates/`
+- Использовать синтаксис Jinja2
+- Вспомогательные функции типа `format_contractor_name` зарегистрированы глобально
 
-### File Structure
+### Структура файлов
 
 ```
 src/
 ├── __init__.py
-├── database.py      # SQLAlchemy models and DB utilities
-├── main.py          # FastAPI app and routes
-└── templates/       # HTML Jinja2 templates
+├── database.py      # Модели SQLAlchemy и утилиты БД
+├── main.py          # Приложение FastAPI и маршруты
+└── templates/       # HTML-шаблоны Jinja2
     ├── dashboard.html
     ├── import.html
     └── ...
@@ -258,61 +269,61 @@ src/
 
 ---
 
-## Database Schema
+## Схема базы данных
 
-| Table | Description |
-|-------|-------------|
-| contractors | Counterparties (normalized names) |
-| employees | Employees (last_name, first_name, middle_name, department) |
-| stop_words | Words used to filter imports |
-| invoices | Invoices from 1C |
-| acts | Acts from SBIS |
-
----
-
-## Key Business Logic
-
-### Contractor Normalization
-- Removes punctuation, moves legal forms (OOO, IP, etc.) to end
-- Example: TekhnoDrayv STROY OOO
-
-### Invoice Filtering (1C Import)
-1. Skip if amount == 0 or empty
-2. Skip if comment contains "udalit" or "zagluшка"
-3. Keep if responsible in RPO department OR surname in comment
-4. Skip if comment contains stop words
-
-### Act Filtering (SBIS Import)
-1. Skip if document type == EDOSch
-2. Keep if package type == DocOtpGrIskh (regardless of doc type)
-3. Status must be "Execution completed successfully"
-4. Signing date must be present
-
-### Invoice Status Calculation
-- **Not paid**: acts sum = 0 or no acts linked
-- **Partially paid**: acts sum < invoice amount
-- **Paid**: acts sum == invoice amount
-- **Amount error**: acts sum > invoice amount (requires attention)
+| Таблица | Описание |
+|---------|----------|
+| contractors | Контрагенты (нормализованные имена) |
+| employees | Сотрудники (фамилия, имя, отчество, отдел) |
+| stop_words | Слова для фильтрации импорта |
+| invoices | Счета из 1С |
+| acts | Акты из СБИС |
 
 ---
 
-## Common Tasks
+## Ключевая бизнес-логика
 
-### Adding a New Endpoint
+### Нормализация контрагентов
+- Удаляет знаки препинания, переносит юридические формы (ООО, ИП и т.д.) в конец
+- Пример: `ТехноДрайв"СТРОЙ"ООО` → `ТехноДрайв СТРОЙ ООО`
 
-1. Add route in `src/main.py`:
+### Фильтрация счетов (импорт из 1С)
+1. Пропустить если сумма == 0 или пустая
+2. Пропустить если комментарий содержит "удалить" или "заглушка"
+3. Оставить если ответственный в отделе РПО/Продажи ИЛИ фамилия в комментарии
+4. Пропустить если комментарий содержит стоп-слова
+
+### Фильтрация актов (импорт из СБИС)
+1. Пропустить если тип документа "ЭДОСч"
+2. Оставить если тип пакета "ДокОтгрИсх" (независимо от типа документа)
+3. Статус должен быть "Выполнение завершено успешно"
+4. Дата подписания должна быть заполнена
+
+### Расчёт статуса счета
+- **Не оплачен**: сумма актов = 0 или нет привязанных актов
+- **Частично**: сумма актов < суммы счета
+- **Оплачен**: сумма актов = сумме счета
+- **Ошибка суммы**: сумма актов > суммы счета (требует внимания)
+
+---
+
+## Частые задачи
+
+### Добавление нового эндпоинта
+
+1. Добавить маршрут в `src/main.py`:
 ```python
 @app.get("/new-page", response_class=HTMLResponse)
 def new_page(request: Request):
     return templates.TemplateResponse("new_page.html", {"request": request})
 ```
 
-2. Create template in `src/templates/new_page.html`
+2. Создать шаблон в `src/templates/new_page.html`
 
-### Adding a New Database Model
+### Добавление новой модели БД
 
-1. Add class in `src/database.py`
-2. Import and use in `src/main.py`:
+1. Добавить класс в `src/database.py`
+2. Импортировать и использовать в `src/main.py`:
 ```python
 from .database import NewModel, get_session
 
@@ -330,9 +341,9 @@ def create_item():
 
 ---
 
-## Testing Guidelines
+## Руководство по тестированию
 
-When adding tests:
+При добавлении тестов:
 
 ```python
 # tests/test_database.py
@@ -351,4 +362,4 @@ def test_contractor_creation():
         session.close()
 ```
 
-Use fixtures in `conftest.py` for shared setup.
+Использовать фикстуры в `conftest.py` для общей настройки.
