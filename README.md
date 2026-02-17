@@ -66,7 +66,7 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 
 ## Статусы счетов
 
-- **Не оплачен**: сум счету =ма актов по 0 или нет привязанных актов
+- **Не оплачен**: сумма актов равна 0 или нет привязанных актов
 - **Частично**: сумма актов < суммы счета
 - **Оплачен**: сумма актов = сумме счета
 - **Ошибка суммы**: сумма актов > суммы счета (требует внимания)
@@ -74,10 +74,10 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 ## Управление базой данных
 
 ### Очистка базы данных
-Запустите `clean_db.bat` — создастся backup в папке `backups/`, база будет очищена и пересоздана.
+Запустите `clear_database.bat` — создастся backup в папке `backups/`, база будет очищена и пересоздана.
 
 ### Восстановление из backup
-Запустите `restore_db.bat` — скрипт покажет список доступных бэкапов и предложит выбрать номер для восстановления.
+Запустите `restore_database.bat` — скрипт покажет список доступных бэкапов и предложит выбрать номер для восстановления.
 
 ## Структура проекта
 
@@ -85,15 +85,18 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 ├── src/
 │   ├── __init__.py
 │   ├── database.py      # Модели БД
-│   ├── main.py         # Приложение FastAPI
-│   └── templates/      # HTML шаблоны
+│   ├── main.py          # Приложение FastAPI
+│   └── templates/       # HTML шаблоны
 │       ├── dashboard.html
 │       ├── unlinked_acts.html
-│       └── import.html
-├── pyproject.toml      # Зависимости
-├── 1_install_uv.bat   # Установка uv
-├── 2_setup.bat        # Установка зависимостей
-├── 3_run.bat          # Запуск приложения
-├── clean_db.bat       # Очистка БД
-└── restore_db.bat     # Восстановление БД
+│       ├── linked_acts.html
+│       ├── import.html
+│       ├── employees.html
+│       └── nav.html
+├── pyproject.toml       # Зависимости
+├── 1_install_uv.bat    # Установка uv
+├── 2_setup.bat         # Установка зависимостей
+├── 3_run.bat           # Запуск приложения
+├── clear_database.bat  # Очистка БД
+└── restore_database.bat # Восстановление БД
 ```
