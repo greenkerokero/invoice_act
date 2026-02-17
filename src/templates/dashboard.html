@@ -509,7 +509,14 @@ invoices.forEach(inv => {
                     <div class="data-cell">${inv.amount.toFixed(2)}</div>
                     <div class="data-cell"><input type="date" class="form-control form-control-sm" value="${inv.payment_date || ''}" onchange="updateInvoice(${inv.id}, 'payment_date', this.value, this)"></div>
                     <div class="data-cell">${inv.deadline || ''}</div>
-                    <div class="data-cell"><input type="number" class="form-control form-control-sm days-input" value="${inv.deadline_days || ''}" min="0" placeholder="0" onchange="calculateDeadline(${inv.id}, this.value, this)"></div>
+                    <div class="data-cell"><input type="number" 
+                           class="form-control form-control-sm days-input" 
+                           value="${inv.deadline_days || ''}" 
+                           min="0" 
+                           placeholder="0" 
+                           onkeydown="return event.keyCode !== 189 && event.keyCode !== 109 && event.key !== '-'"
+                           oninput="if(this.value < 0) this.value = Math.abs(this.value)"
+                           onchange="calculateDeadline(${inv.id}, this.value, this)"></div>
                     <div class="data-cell">${formatName(inv.responsible_import) || ''}</div>
                     <div class="data-cell">
                         <select class="form-select form-select-sm" onchange="updateInvoice(${inv.id}, 'motivated_person', this.value, this)">

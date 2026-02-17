@@ -721,6 +721,8 @@ def update_act(
                 else:
                     act.invoice_id = invoice_id
             if amount is not None:
+                if amount < 0:
+                    return {"success": False, "error": "Сумма не может быть отрицательной"}
                 act.amount = amount
             session.commit()
         return {"success": True}
@@ -1246,6 +1248,9 @@ def calculate_deadline(invoice_id: int, days: int = Form(...)):
 
         if not invoice.payment_date:
             return {"error": "Не указана дата оплаты", "success": False}
+
+        if days < 0:
+            return {"success": False, "error": "Количество дней не может быть отрицательным"}
 
         year = invoice.payment_date.year
         holidays = get_russian_holidays(year)
