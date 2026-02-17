@@ -1224,14 +1224,14 @@ def get_acts_by_invoice(invoice_id: int):
 
 
 @app.post("/contractor/update-inn/{contractor_id}")
-def update_contractor_inn(contractor_id: int, inn: str = Form(...)):
+def update_contractor_inn(contractor_id: int, inn: Optional[str] = Form(None)):
     session = get_session()
     try:
         contractor = (
             session.query(Contractor).filter(Contractor.id == contractor_id).first()
         )
         if contractor:
-            contractor.inn = inn
+            contractor.inn = inn if inn and inn.strip() else None
             session.commit()
             return {"success": True}
         return {"error": "Контрагент не найден", "success": False}
