@@ -113,12 +113,12 @@ After making changes:
 ```bash
 # Commit example
 git add .
-git commit -m "Added email validation for employee import"
+git commit -m "Добавлена валидация email при импорте сотрудников"
 git push
 ```
 
 **Important:**
-- Do not write generic commit messages like " очередная итерация правок от пользователя"
+- Do not write generic commit messages like "Очередная итерация правок от пользователя"
 - Commit message should reflect the specific change
 
 ### General Principles
