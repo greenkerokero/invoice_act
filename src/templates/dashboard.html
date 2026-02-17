@@ -138,7 +138,7 @@
             <div class="navbar-nav ms-auto">
                 <a class="nav-link active" href="/">Счета</a>
                 <a class="nav-link" href="/linked-acts">Привязанные акты</a>
-                <a class="nav-link" href="/unlinked-acts">Непривязанные акты</a>
+                <a class="nav-link" href="/unlinked-acts">Свободные акты</a>
                 <a class="nav-link" href="/import">Импорт и Настройки</a>
                 <a class="nav-link" href="/employees">Сотрудники</a>
             </div>
@@ -587,10 +587,10 @@ invoices.forEach(inv => {
                 .then(acts => {
                     const container = document.getElementById('free-acts-content-' + invoiceId);
                     if (acts.length === 0) {
-                        container.innerHTML = '<div class="nested-table-wrapper"><h6>Непривязанные акты</h6><span class="text-muted d-block">Нет свободных актов для этого контрагента</span></div>';
+                        container.innerHTML = '<div class="nested-table-wrapper"><h6>Свободные акты</h6><span class="text-muted d-block">Нет свободных актов для этого контрагента</span></div>';
                         return;
                     }
-                    let html = '<div class="nested-table-wrapper"><h6>Непривязанные акты</h6><div class="data-table nested-table" style="--cols: 120px 100px 100px 150px 180px;">';
+                    let html = '<div class="nested-table-wrapper"><h6>Свободные акты</h6><div class="data-table nested-table" style="--cols: 120px 100px 100px 150px 180px;">';
                     html += '<div class="data-header"><div class="data-cell free">№ акта</div><div class="data-cell free">Дата</div><div class="data-cell free">Сумма</div><div class="data-cell free">Ответственный</div><div class="data-cell free">Действие</div></div>';
                     acts.forEach(act => {
                         html += `<div class="data-row-wrapper"><div class="data-row">
