@@ -136,7 +136,7 @@
 
         <h5 class="mt-4">Счета</h5>
         <div class="table-wrapper">
-            <div class="data-header" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) minmax(85px, 0.8fr) 36px;">
+            <div class="data-header" id="invoicesHeader" style="--cols: 40px 10px minmax(70px, 0.8fr) minmax(90px, 1fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(60px, 0.7fr) minmax(130px, 1.5fr) minmax(160px, 2fr) minmax(150px, 1.8fr) minmax(150px, 1.8fr) 40px;">
                 <div class="data-cell"></div>
                 <div class="data-cell"></div>
                 <div class="data-cell sortable" data-sort="number" onclick="sortInvoices('number')">№ счета</div>
@@ -147,25 +147,25 @@
                 <div class="data-cell">Дней</div>
                 <div class="data-cell sortable" data-sort="responsible_import" onclick="sortInvoices('responsible_import')">Ответственный</div>
                 <div class="data-cell sortable" data-sort="motivated_person" onclick="sortInvoices('motivated_person')">Мотивируемый</div>
-                <div class="data-cell sortable" data-sort="acts_count" onclick="sortInvoices('acts_count')">Акты</div>
+                <div class="data-cell sortable wrap-header" data-sort="acts_count" onclick="sortInvoices('acts_count')">Акты</div>
                 <div class="data-cell sortable wrap-header" data-sort="free_acts_count" onclick="sortInvoices('free_acts_count')">Свободные акты</div>
                 <div class="data-cell"></div>
             </div>
-            <div class="data-table" id="invoicesTable" style="--cols: 26px 6px minmax(60px, 0.8fr) minmax(90px, 1fr) minmax(80px, 1fr) minmax(100px, 1fr) minmax(85px, 0.9fr) minmax(80px, 1fr) minmax(115px, 1.2fr) minmax(115px, 1.2fr) minmax(45px, 0.5fr) minmax(110px, 1.3fr) minmax(140px, 1.8fr) minmax(70px, 0.8fr) minmax(85px, 0.8fr) 36px;">
+            <div class="data-table" id="invoicesTable" style="--cols: 40px 10px minmax(70px, 0.8fr) minmax(90px, 1fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(100px, 1.2fr) minmax(60px, 0.7fr) minmax(130px, 1.5fr) minmax(160px, 2fr) minmax(150px, 1.8fr) minmax(150px, 1.8fr) 40px;">
                 <div id="invoicesBody"></div>
             </div>
         </div>
 
         <h5 class="mt-4">Свободные акты</h5>
         <div class="table-wrapper">
-            <div class="data-header" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(130px, 1.5fr) minmax(160px, 1.8fr);">
+            <div class="data-header" id="actsHeader" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(180px, 2fr) minmax(200px, 2.5fr);">
                 <div class="data-cell sortable" data-sort="number" onclick="sortActs('number')">№ акта</div>
                 <div class="data-cell sortable" data-sort="signing_date" onclick="sortActs('signing_date')">Дата подписания</div>
                 <div class="data-cell sortable" data-sort="amount" onclick="sortActs('amount')">Сумма</div>
                 <div class="data-cell sortable" data-sort="responsible_manager" onclick="sortActs('responsible_manager')">Ответственный менеджер</div>
                 <div class="data-cell">Действия</div>
             </div>
-            <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(90px, 1fr) minmax(130px, 1.5fr) minmax(160px, 1.8fr);">
+            <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(180px, 2fr) minmax(200px, 2.5fr);">
                 <div id="unlinkedActsBody"></div>
             </div>
         </div>
@@ -258,7 +258,9 @@
         }
 
         function updateSortIndicatorsInvoices() {
-            document.querySelectorAll('#invoicesTable ~ .data-header .data-cell.sortable').forEach(cell => {
+            const header = document.getElementById('invoicesHeader');
+            if (!header) return;
+            header.querySelectorAll('.data-cell.sortable').forEach(cell => {
                 cell.classList.remove('sort-asc', 'sort-desc');
                 if (cell.dataset.sort === currentSortInvoices.field) {
                     cell.classList.add(currentSortInvoices.direction === 'asc' ? 'sort-asc' : 'sort-desc');
@@ -267,7 +269,9 @@
         }
 
         function updateSortIndicatorsActs() {
-            document.querySelectorAll('#unlinkedActsBody ~ .data-header .data-cell.sortable').forEach(cell => {
+            const header = document.getElementById('actsHeader');
+            if (!header) return;
+            header.querySelectorAll('.data-cell.sortable').forEach(cell => {
                 cell.classList.remove('sort-asc', 'sort-desc');
                 if (cell.dataset.sort === currentSortActs.field) {
                     cell.classList.add(currentSortActs.direction === 'asc' ? 'sort-asc' : 'sort-desc');
@@ -637,7 +641,9 @@
 
         loadEmployees();
         renderInvoices();
+        updateSortIndicatorsInvoices();
         renderUnlinkedActs();
+        updateSortIndicatorsActs();
     </script>
 </body>
 </html>
