@@ -97,6 +97,7 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload
 ├── 1_install_uv.bat    # Установка uv
 ├── 2_setup.bat         # Установка зависимостей
 ├── 3_run.bat           # Запуск приложения
+├── clone_repo.bat      # Обновление проекта из GitHub
 ├── clear_database.bat  # Очистка БД
 └── restore_database.bat # Восстановление БД
 ```
