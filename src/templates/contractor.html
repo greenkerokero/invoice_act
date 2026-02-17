@@ -162,14 +162,15 @@
 
         <h5 class="mt-4">Свободные акты</h5>
         <div class="table-wrapper">
-            <div class="data-header" id="actsHeader" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr);">
+            <div class="data-header" id="actsHeader" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr);">
                 <div class="data-cell sortable" data-sort="number" onclick="sortActs('number')">№ акта</div>
                 <div class="data-cell sortable" data-sort="signing_date" onclick="sortActs('signing_date')">Дата подписания</div>
                 <div class="data-cell sortable" data-sort="amount" onclick="sortActs('amount')">Сумма</div>
                 <div class="data-cell sortable" data-sort="responsible_manager" onclick="sortActs('responsible_manager')">Ответственный менеджер</div>
                 <div class="data-cell">Привязать к счету</div>
+                <div class="data-cell">Действия</div>
             </div>
-            <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr);">
+            <div class="data-table" style="--cols: minmax(100px, 1fr) minmax(120px, 1.3fr) minmax(110px, 1.2fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr) minmax(200px, 2.5fr);">
                 <div id="unlinkedActsBody"></div>
             </div>
         </div>
@@ -514,19 +515,14 @@
                             ${getInvoiceOptions(null)}
                         </select>
                     </div>
-                `;
-                wrapper.appendChild(row);
-                
-                const actionsRow = document.createElement('div');
-                actionsRow.className = 'data-row';
-                actionsRow.style.gridColumn = '1 / -1';
-                actionsRow.innerHTML = `
-                    <div class="data-cell" style="display:flex;gap:4px;flex-wrap:nowrap;">
-                        <button class="btn btn-sm btn-success" onclick="applyActChanges(${act.id})">Применить</button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteAct(${act.id}, '${act.number}')">Удалить</button>
+                    <div class="data-cell">
+                        <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:nowrap;">
+                            <button class="btn btn-sm btn-success" onclick="applyActChanges(${act.id})">Применить</button>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteAct(${act.id}, '${act.number}')">Удалить</button>
+                        </div>
                     </div>
                 `;
-                wrapper.appendChild(actionsRow);
+                wrapper.appendChild(row);
                 
                 body.appendChild(wrapper);
             });
