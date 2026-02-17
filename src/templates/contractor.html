@@ -505,7 +505,7 @@
                            oninput="if(this.value < 0) this.value = Math.abs(this.value)"
                            onchange="updateAmount(${act.id}, this.value)"></div>
                     <div class="data-cell">
-                        <select class="form-select form-select-sm" id="responsible-${act.id}" onchange="updateActField(${act.id}, 'responsible_manager', this.value)">
+                        <select class="form-select form-select-sm" id="responsible-${act.id}">
                             ${getEmployeeOptions(act.responsible_manager)}
                         </select>
                     </div>
@@ -523,7 +523,6 @@
                 actionsRow.innerHTML = `
                     <div class="data-cell" style="display:flex;gap:4px;flex-wrap:nowrap;">
                         <button class="btn btn-sm btn-success" onclick="applyActChanges(${act.id})">Применить</button>
-                        <button class="btn btn-sm btn-primary" onclick="linkActDirect(${act.id})">Привязать к выбранному счету</button>
                         <button class="btn btn-sm btn-danger" onclick="confirmDeleteAct(${act.id}, '${act.number}')">Удалить</button>
                     </div>
                 `;
@@ -582,47 +581,21 @@
               });
         }
 
-        function updateActField(actId, field, value) {
-            // Just update local state, actual save on button click
-        }
-
         function applyActChanges(actId) {
             const responsibleSelect = document.getElementById('responsible-' + actId);
             const amountInput = document.getElementById('amount-' + actId);
+            const invoiceSelect = document.getElementById('invoice-' + actId);
             
             const responsible = responsibleSelect ? responsibleSelect.value : '';
             const amount = amountInput ? parseFloat(amountInput.value) : 0;
+            const invoiceId = invoiceSelect ? invoiceSelect.value : '';
 
             const formData = new FormData();
             if (responsible) formData.append('responsible_manager', responsible);
             if (amount >= 0) formData.append('amount', amount);
+            if (invoiceId) formData.append('invoice_id', invoiceId);
 
             fetch('/act/update/' + actId, {
-                method: 'POST',
-                body: formData
-            }).then(r => r.json())
-              .then(result => {
-                  if (result.success) {
-                      location.reload();
-                  } else {
-                      alert('Ошибка: ' + (result.error || 'Unknown error'));
-                  }
-              });
-        }
-
-        function linkActDirect(actId) {
-            const invoiceSelect = document.getElementById('invoice-' + actId);
-            const invoiceId = invoiceSelect ? invoiceSelect.value : '';
-            
-            if (!invoiceId) {
-                alert('Выберите счёт из списка');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('invoice_id', invoiceId);
-            
-            fetch('/act/link/' + actId, {
                 method: 'POST',
                 body: formData
             }).then(r => r.json())
