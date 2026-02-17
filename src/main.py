@@ -1,15 +1,13 @@
 import os
 import re
-import shutil
 from datetime import datetime, date, timedelta
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from functools import lru_cache
 
 from fastapi import FastAPI, Request, Form, UploadFile, File, Body
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from openpyxl import load_workbook
 
@@ -155,7 +153,7 @@ def parse_datetime(value) -> Optional[datetime]:
     if isinstance(value, (int, float)):
         try:
             return datetime(1899, 12, 30) + datetime.timedelta(days=int(value))
-        except:
+        except (ValueError, OverflowError):
             return None
     if isinstance(value, str):
         value = value.strip()
@@ -177,7 +175,7 @@ def parse_datetime(value) -> Optional[datetime]:
         for fmt in formats_with_time:
             try:
                 return datetime.strptime(value, fmt)
-            except:
+            except ValueError:
                 continue
     return None
 
@@ -196,7 +194,7 @@ def parse_amount(value) -> Optional[float]:
         value = value.replace(" ", "").replace(",", ".").strip()
         try:
             return float(value)
-        except:
+        except ValueError:
             return None
     return None
 
@@ -974,7 +972,7 @@ def get_free_acts(contractor_id: int):
     try:
         acts = (
             session.query(Act)
-            .filter(Act.contractor_id == contractor_id, Act.invoice_id == None)
+            .filter(Act.contractor_id == contractor_id, Act.invoice_id is None)
             .all()
         )
         return [
@@ -1006,7 +1004,7 @@ def get_linked_acts(
     try:
         query = (
             session.query(Act)
-            .filter(Act.invoice_id != None)
+            .filter(Act.invoice_id is not None)
             .options(joinedload(Act.contractor), joinedload(Act.invoice))
         )
 
@@ -1092,7 +1090,7 @@ def get_unlinked_acts(
     try:
         query = (
             session.query(Act)
-            .filter(Act.invoice_id == None)
+            .filter(Act.invoice_id is None)
             .options(joinedload(Act.contractor))
         )
 
@@ -1353,7 +1351,7 @@ def list_invoices_filtered(
 
         all_free_acts = (
             session.query(Act)
-            .filter(Act.contractor_id.in_(contractor_ids), Act.invoice_id == None)
+            .filter(Act.contractor_id.in_(contractor_ids), Act.invoice_id is None)
             .all()
             if contractor_ids
             else []
