@@ -54,19 +54,20 @@ def format_contractor_name(name: str) -> str:
         return name
     parts = name.strip().split()
     result_parts = []
+    legal_forms_lower = [
+        "ооо",
+        "ип",
+        "ао",
+        "зао",
+        "оао",
+        "пао",
+        "нко",
+        "ано",
+        "фгуп",
+        "муп",
+    ]
     for part in parts:
-        if part in [
-            "ооо",
-            "ип",
-            "ао",
-            "зао",
-            "оао",
-            "пао",
-            "нко",
-            "ано",
-            "фгуп",
-            "муп",
-        ]:
+        if part.lower() in legal_forms_lower:
             result_parts.append(part.upper())
         else:
             result_parts.append(part.capitalize())
@@ -124,19 +125,20 @@ def format_contractor_name(name: str) -> str:
         return name
     parts = name.strip().split()
     result_parts = []
+    legal_forms_lower = [
+        "ооо",
+        "ип",
+        "ао",
+        "зао",
+        "оао",
+        "пао",
+        "нко",
+        "ано",
+        "фгуп",
+        "муп",
+    ]
     for part in parts:
-        if part in [
-            "ооо",
-            "ип",
-            "ао",
-            "зао",
-            "оао",
-            "пао",
-            "нко",
-            "ано",
-            "фгуп",
-            "муп",
-        ]:
+        if part.lower() in legal_forms_lower:
             result_parts.append(part.upper())
         else:
             result_parts.append(part.capitalize())
@@ -722,7 +724,10 @@ def update_act(
                     act.invoice_id = invoice_id
             if amount is not None:
                 if amount < 0:
-                    return {"success": False, "error": "Сумма не может быть отрицательной"}
+                    return {
+                        "success": False,
+                        "error": "Сумма не может быть отрицательной",
+                    }
                 act.amount = amount
             session.commit()
         return {"success": True}
@@ -1250,7 +1255,10 @@ def calculate_deadline(invoice_id: int, days: int = Form(...)):
             return {"error": "Не указана дата оплаты", "success": False}
 
         if days < 0:
-            return {"success": False, "error": "Количество дней не может быть отрицательным"}
+            return {
+                "success": False,
+                "error": "Количество дней не может быть отрицательным",
+            }
 
         year = invoice.payment_date.year
         holidays = get_russian_holidays(year)
